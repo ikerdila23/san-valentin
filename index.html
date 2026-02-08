@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Quieres ser mi San Valentín?</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Pacifico&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-hearts" id="bg-hearts"></div>
+
+    <!-- PANTALLA 1 -->
+    <section id="screen-1" class="screen active">
+        <div class="card">
+            <h1 class="title">¿Quieres ser mi San Valentín? 💌</h1>
+            <p class="subtitle">Prometo que es importante 😳</p>
+            <div class="buttons-container">
+                <button class="btn btn-yes" onclick="goToScreen(2)">Sí 💖</button>
+                <button class="btn btn-no" id="btn-n1">No 😅</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PANTALLA 2 -->
+    <section id="screen-2" class="screen hidden">
+        <div class="card">
+            <h1 class="title">Pues querrás un regalo, ¿no? 🎁</h1>
+            <div class="buttons-container reverse">
+                <button class="btn btn-yes-escape" id="btn-y2">Sí 😏</button>
+                <button class="btn btn-no-static" id="btn-n2">No 🤭</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PANTALLA 3 -->
+    <section id="screen-3" class="screen hidden">
+        <canvas id="confetti-canvas"></canvas>
+        <div class="container">
+            <h1 class="title">Aquí tienes tus regalos 💝</h1>
+            <div class="gift-grid">
+                <div class="gift-box" onclick="openGift(this, 0)">
+                    <div class="gift-lid"></div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
+                </div>
+                <div class="gift-box" onclick="openGift(this, 1)">
+                    <div class="gift-lid"></div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
+                </div>
+                <div class="gift-box" onclick="openGift(this, 2)">
+                    <div class="gift-lid"></div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
+                </div>
+                <div class="gift-box" onclick="openGift(this, 3)">
+                    <div class="gift-lid"></div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
