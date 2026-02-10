@@ -359,14 +359,63 @@ body {
     align-items: center;
     justify-content: center;
     padding: 14px;
-    text-align: center;
-    line-height: 1.25;
-    font-size: 1.05rem;
-    color: #d63384;
-    font-weight: 600;
     z-index: 0;
     max-width: 100%;
+}
+
+/* Gift Note (Premium Look) */
+.gift-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    animation: fadeSlideUp 0.4s ease-out forwards;
+    opacity: 0;
+}
+
+.gift-note-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #ff0055;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.gift-note-message {
+    font-size: 1.1rem;
+    line-height: 1.35;
+    color: #d63384;
+    font-weight: 600;
+    margin-bottom: 10px;
     word-break: break-word;
+}
+
+.gift-note-footer {
+    font-size: 0.8rem;
+    color: #ff8fa3;
+    font-style: italic;
+    margin-top: 4px;
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .gift-note-message {
+        font-size: 1rem;
+    }
 }
 
 /* Animations */

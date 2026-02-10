@@ -1,16 +1,32 @@
 /* CONFIGURACIÓN */
 const CONFIG = {
-    version: '1.2',
+    version: '1.3',
     partnerName: "", // Poner nombre aquí, e.g. "Laura"
     sinceDate: "", // Texto opcional, e.g. "Desde 2023... 💘"
     photoUrl: "", // Ruta opcional, e.g. "./assets/us.jpg"
     soundEnabled: true,
     screen2Attempts: 8,
     gifts: [
-        "Vale por un texto bonito 📝",
-        "Vale por un día de Spa 🧖‍♀️",
-        "Vale por besos infinitos 💋",
-        "Vale por un Plan Secreto 🤫"
+        {
+            title: "Vale Especial 📝",
+            message: "Vale por un texto bonito cuando más lo necesites.",
+            footer: "Con amor, yo 💌"
+        },
+        {
+            title: "Relax Time 🧖‍♀️",
+            message: "Vale por un día de Spa, masajes y mimos.",
+            footer: "Para ti ❤️"
+        },
+        {
+            title: "Besos 💋",
+            message: "Vale por una sesión de besos infinitos (sin caducidad).",
+            footer: "Te quiero 💖"
+        },
+        {
+            title: "Sorpresa 🤫",
+            message: "Vale por un Plan Secreto que te encantará.",
+            footer: "Juntos 👫"
+        }
     ],
     messages: {
         screen2No: "No acepto esa respuesta 😌",
@@ -28,7 +44,6 @@ const state = {
     canClickScreen2Yes: false,
     textIndex1: 0,
     textIndex2: 0,
-    openedGifts: 0
 };
 
 /* AUDIO CONTEXT */
@@ -367,7 +382,30 @@ function openGift(element, index) {
     element.classList.add('open');
 
     const contentDiv = element.querySelector('.gift-content');
-    contentDiv.innerText = CONFIG.gifts[index];
+    const giftData = CONFIG.gifts[index];
+
+    // Create structured HTML
+    const note = document.createElement('div');
+    note.className = 'gift-note';
+
+    const title = document.createElement('div');
+    title.className = 'gift-note-title';
+    title.textContent = giftData.title;
+
+    const message = document.createElement('div');
+    message.className = 'gift-note-message';
+    message.textContent = giftData.message;
+
+    const footer = document.createElement('div');
+    footer.className = 'gift-note-footer';
+    footer.textContent = giftData.footer;
+
+    note.appendChild(title);
+    note.appendChild(message);
+    note.appendChild(footer);
+
+    contentDiv.innerHTML = '';
+    contentDiv.appendChild(note);
 }
 
 /* CONFETI BACKGROUND (Screen 3) */
