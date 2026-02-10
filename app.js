@@ -241,13 +241,34 @@ function resetEscapingButtons() {
 }
 
 function initButtons() {
+    // PANTALLA 1: Botón NO se escapa
     const btnNo1 = document.getElementById('btn-n1');
     const escapeHandler1 = (e) => { moveButton(btnNo1); };
 
     btnNo1.addEventListener('mouseenter', escapeHandler1);
-    btnNo1.addEventListener('click', (e) => { e.preventDefault(); moveButton(btnNo1); }); // Fix para click en movil a veces
+    btnNo1.addEventListener('click', (e) => { e.preventDefault(); moveButton(btnNo1); });
     btnNo1.addEventListener('touchstart', (e) => { e.preventDefault(); escapeHandler1(e); }, { passive: false });
 
+    // PANTALLA 1: Botón SÍ
+    const btnYes1 = document.getElementById('btn-y1');
+    const handleYes1 = () => {
+        console.log("YES1 CLICK"); // DEBUG
+        btnYes1.style.transform = "scale(0.95)";
+        setTimeout(() => btnYes1.style.transform = "scale(1)", 100);
+        goToScreen(2);
+    };
+
+    btnYes1.addEventListener('click', handleYes1);
+    btnYes1.addEventListener('touchend', (e) => {
+        // No preventDefault here to allow click generation, 
+        // but we can call handler directly to be sure and safer for iOS 
+        // if click is delayed.
+        // However, standard checks suggest just adding click is usually enough if no things block it. 
+        // User asked for touchend.
+        handleYes1();
+    });
+
+    // PANTALLA 2: Botón SÍ se escapa (al revés)
     const btnYes2 = document.getElementById('btn-y2');
     const btnNo2 = document.getElementById('btn-n2');
 
