@@ -286,13 +286,14 @@ body {
 }
 
 /* Gift Ribbon & Bow */
+/* Gift Ribbon & Bow */
 .gift-lid::before {
     /* Ribbon Vertical */
     content: '';
     position: absolute;
     width: 25px;
     height: 100%;
-    background: #ffc107;
+    background: #ff4d6d;
     left: 50%;
     transform: translateX(-50%);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -304,7 +305,7 @@ body {
     position: absolute;
     height: 25px;
     width: 100%;
-    background: #ffc107;
+    background: #ff4d6d;
     top: 50%;
     transform: translateY(-50%);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -328,7 +329,7 @@ body {
     width: 25px;
     height: 25px;
     border-radius: 50% 50% 0 50%;
-    background: #ffd54f;
+    background: #ffc107;
     border: 2px solid #ffca28;
     top: -15px;
 }
@@ -538,48 +539,6 @@ body {
         opacity: 0;
         display: none;
     }
-}
-
-/* Modal */
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    backdrop-filter: blur(4px);
-    animation: popIn 0.3s ease-out;
-}
-
-.modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 20px;
-    text-align: center;
-    max-width: 90%;
-    width: 400px;
-    position: relative;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-}
-
-.close-modal {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #aaa;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
 }
 
 /* Enhancements for Gift Box */
