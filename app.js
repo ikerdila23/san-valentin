@@ -332,6 +332,7 @@ function goToScreen(screenNum) {
 }
 
 /* REGALOS & MODAL */
+/* FUNCIONES DE REGALOS */
 function spawnMiniConfetti(element) {
     const colors = ['#ff4d6d', '#ff8fa3', '#fff', '#ffc107', '#ff0055'];
     const particleCount = 20;
@@ -367,29 +368,6 @@ function openGift(element, index) {
 
     const contentDiv = element.querySelector('.gift-content');
     contentDiv.innerText = CONFIG.gifts[index];
-
-    state.openedGifts++;
-
-    if (state.openedGifts === 4) {
-        setTimeout(showCompletionModal, 1500);
-    }
-}
-
-function showCompletionModal() {
-    const modal = document.getElementById('completion-modal');
-    modal.classList.remove('hidden');
-    playPop();
-}
-
-function closeModal() {
-    const modal = document.getElementById('completion-modal');
-    modal.classList.add('hidden');
-}
-
-function finishDate(choice) {
-    alert(`Perfecto, ${choice.toLowerCase()}. ¡Te quiero! 😘`);
-    closeModal();
-    startConfetti(); // Más confeti
 }
 
 /* CONFETI BACKGROUND (Screen 3) */

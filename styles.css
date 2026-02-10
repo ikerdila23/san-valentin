@@ -285,26 +285,62 @@ body {
     align-items: center;
 }
 
+/* Gift Ribbon & Bow */
 .gift-lid::before {
     /* Ribbon Vertical */
     content: '';
     position: absolute;
-    width: 20px;
+    width: 25px;
     height: 100%;
     background: #ffc107;
     left: 50%;
     transform: translateX(-50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .gift-lid::after {
     /* Ribbon Horizontal */
     content: '';
     position: absolute;
-    height: 20px;
+    height: 25px;
     width: 100%;
     background: #ffc107;
     top: 50%;
     transform: translateY(-50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gift-bow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.gift-bow::before,
+.gift-bow::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    border-radius: 50% 50% 0 50%;
+    background: #ffd54f;
+    border: 2px solid #ffca28;
+    top: -15px;
+}
+
+.gift-bow::before {
+    left: -5px;
+    transform: rotate(45deg);
+}
+
+.gift-bow::after {
+    right: -5px;
+    transform: rotate(-45deg);
 }
 
 .gift-box.open .gift-lid {
