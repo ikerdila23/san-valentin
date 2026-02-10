@@ -10,14 +10,75 @@ const CONFIG = {
     messages: {
         screen2No: "No acepto esa respuesta 😌",
         screen2Funny: "Vale, vale... 😌"
-    }
+    },
+    escapeTextsScreen1: ["No 😅", "¿Seguro? 😳", "Nop 🤭", "Inténtalo 😈", "Casi… 😂", "Uy 😏"],
+    escapeTextsScreen2: ["Sí 😏", "Píllame 😳", "No tan rápido 😈", "Casi lo logras 😅", "Última 😜", "Ok ok… 🙈"]
 };
 
 /* ESTADO */
 const state = {
     screen2ClickCount: 0,
-    canClickScreen2Yes: false
+    canClickScreen2Yes: false,
+    textIndex1: 0,
+    textIndex2: 0
 };
+
+/* AUDIO CONTEXT PARA POP */
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+function playPop() {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.type = 'sine';
+    // Frecuencia "pop"
+    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+
+    // Envelope corto
+    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
+
+/* MINI CONFETI */
+function spawnMiniConfetti(element) {
+    const colors = ['#ff4d6d', '#ff8fa3', '#fff', '#ffc107', '#ff0055'];
+    const particleCount = 20;
+
+    for (let i = 0; i < particleCount; i++) {
+        const confetto = document.createElement('div');
+        confetto.classList.add('mini-confetto');
+
+        // Color aleatorio
+        confetto.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        // Dirección aleatoria
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 50 + Math.random() * 100; // Distancia de vuelo
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+
+        confetto.style.setProperty('--tx', `${tx}px`);
+        confetto.style.setProperty('--ty', `${ty}px`);
+
+        element.appendChild(confetto);
+
+        // Limpieza
+        setTimeout(() => {
+            confetto.remove();
+        }, 800);
+    }
+}
 
 /* FUNCIONES DE NAVEGACIÓN */
 function goToScreen(screenNum) {
@@ -119,6 +180,15 @@ function moveButton(btn) {
         moveButtonToOverlay(btn);
     }
 
+    // CAMBIO DE TEXTO AL MOVERSE
+    if (btn.id === 'btn-n1') {
+        state.textIndex1 = (state.textIndex1 + 1) % CONFIG.escapeTextsScreen1.length;
+        btn.innerText = CONFIG.escapeTextsScreen1[state.textIndex1];
+    } else if (btn.id === 'btn-y2') {
+        state.textIndex2 = (state.textIndex2 + 1) % CONFIG.escapeTextsScreen2.length;
+        btn.innerText = CONFIG.escapeTextsScreen2[state.textIndex2];
+    }
+
     const width = window.innerWidth;
     const height = window.innerHeight;
     const btnRect = btn.getBoundingClientRect();
@@ -137,7 +207,6 @@ function moveButton(btn) {
     do {
         newX = margin + Math.random() * (width - btnRect.width - margin * 2);
         newY = margin + Math.random() * (height - btnRect.height - margin * 2);
-
         safe++;
     } while (Math.hypot(newX - currentX, newY - currentY) < minJump && safe < 15);
 
@@ -216,6 +285,9 @@ function initButtons() {
 /* FUNCIONES DE REGALOS */
 function openGift(element, index) {
     if (element.classList.contains('open')) return;
+
+    playPop(); // SONIDO
+    spawnMiniConfetti(element); // CONFETI
 
     element.classList.add('open');
     const contentDiv = element.querySelector('.gift-content');
