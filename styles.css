@@ -218,34 +218,28 @@ body {
 @media (max-width: 768px) {
     .gift-grid {
         grid-template-columns: repeat(2, 1fr);
-        /* 2x2 en móvil */
         gap: 12px;
     }
 
     .gift-box {
-        height: 140px;
-        /* Reducido para móvil */
-        border-color: blue !important;
-        /* DEBUG VISUAL */
+        height: clamp(120px, 18vh, 170px);
+        /* Responsive height */
     }
 
     .title {
         font-size: 1.8rem;
-        /* Ajustar texto */
         margin-bottom: 0.5rem;
     }
 
     .container {
         padding: 10px;
         max-height: 92vh;
-        /* Evitar que se salga */
         overflow-y: auto;
-        /* Scroll suave si es necesario */
     }
 
     .gift-content {
-        font-size: 1rem;
-        /* Texto de regalo más pequeño */
+        font-size: 0.95rem;
+        padding: 10px;
     }
 }
 
@@ -286,62 +280,53 @@ body {
 }
 
 /* Gift Ribbon & Bow */
-/* Gift Ribbon & Bow */
+/* Gift Ribbon & Bow (Minimal Elegant) */
 .gift-lid::before {
     /* Ribbon Vertical */
     content: '';
     position: absolute;
-    width: 25px;
+    width: 20px;
     height: 100%;
     background: #ff4d6d;
     left: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
 }
 
 .gift-lid::after {
     /* Ribbon Horizontal */
     content: '';
     position: absolute;
-    height: 25px;
+    height: 20px;
     width: 100%;
     background: #ff4d6d;
     top: 50%;
     transform: translateY(-50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
 }
 
 .gift-bow {
+    /* Minimal Knot (Center) */
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
+    background: #ffc107;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 10;
     pointer-events: none;
+    border: 2px solid #ffca28;
 }
 
+/* Remove old bow ears if any */
 .gift-bow::before,
 .gift-bow::after {
-    content: '';
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    border-radius: 50% 50% 0 50%;
-    background: #ffc107;
-    border: 2px solid #ffca28;
-    top: -15px;
-}
-
-.gift-bow::before {
-    left: -5px;
-    transform: rotate(45deg);
-}
-
-.gift-bow::after {
-    right: -5px;
-    transform: rotate(-45deg);
+    display: none;
 }
 
 .gift-box.open .gift-lid {
@@ -349,15 +334,39 @@ body {
 }
 
 .gift-body {
+    /* Question Mark Layer */
     font-size: 4rem;
     color: #ff4d6d;
     z-index: 1;
     opacity: 0;
-    transition: opacity 0.3s 0.3s;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .gift-box.open .gift-body {
     opacity: 0;
+}
+
+/* Gift Content (Text) */
+.gift-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    text-align: center;
+    line-height: 1.25;
+    font-size: 1.05rem;
+    color: #d63384;
+    font-weight: 600;
+    z-index: 0;
+    max-width: 100%;
+    word-break: break-word;
 }
 
 /* Animations */
