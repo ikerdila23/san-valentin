@@ -36,43 +36,46 @@ function goToScreen(screenNum) {
 }
 
 /* FUNCIONES DE BOTONES ESCAPISTAS */
-/* FUNCIONES DE BOTONES ESCAPISTAS */
-function getActiveButtonsContainer(btn) {
-    // Busca el contenedor de botones dentro de la pantalla donde está el botón
-    const screen = btn.closest('.screen');
-    if (!screen) return null;
-    return screen.querySelector('.buttons-container');
-}
-
 function moveButton(btn) {
-    const container = getActiveButtonsContainer(btn);
+    const container = btn.closest('.buttons-container');
     if (!container) return;
 
-    // Asegura posicionamiento relativo en contenedor (por si acaso)
-    container.style.position = container.style.position || 'relative';
-
-    const margin = 12;
+    // Asegurar position absolute
+    if (getComputedStyle(btn).position !== 'absolute') {
+        btn.style.position = 'absolute';
+    }
 
     const cw = container.clientWidth;
     const ch = container.clientHeight;
-
-    // Medidas reales del botón
     const bw = btn.offsetWidth;
     const bh = btn.offsetHeight;
+    const margin = 8;
 
-    // Si el contenedor es muy pequeño, no mover
-    if (cw < bw + margin * 2 || ch < bh + margin * 2) return;
+    // Calcular límites
+    const maxLeft = cw - bw - margin;
+    const maxTop = ch - bh - margin;
 
-    const maxX = cw - bw - margin;
-    const maxY = ch - bh - margin;
+    // Generar posiciones
+    let newLeft = margin + Math.random() * (maxLeft - margin);
+    let newTop = margin + Math.random() * (maxTop - margin);
 
-    const newX = Math.random() * (maxX - margin) + margin;
-    const newY = Math.random() * (maxY - margin) + margin;
+    // Clamp escrito (seguridad)
+    // newLeft debe ser >= margin y <= maxLeft
+    newLeft = Math.min(Math.max(newLeft, margin), maxLeft);
+    newTop = Math.min(Math.max(newTop, margin), maxTop);
 
-    // 🔥 IMPORTANTE: ahora el botón es absolute dentro del contenedor
-    btn.classList.add('btn-escape');
-    btn.style.left = `${newX}px`;
-    btn.style.top = `${newY}px`;
+    btn.style.left = `${newLeft}px`;
+    btn.style.top = `${newTop}px`;
+
+    // Failsafe pedido: verificar numéricamente
+    const currentLeft = parseFloat(btn.style.left);
+    const currentTop = parseFloat(btn.style.top);
+
+    if (currentLeft < 0 || currentLeft > maxLeft || currentTop < 0 || currentTop > maxTop) {
+        // Centrar si falla
+        btn.style.left = `${(cw - bw) / 2}px`;
+        btn.style.top = `${(ch - bh) / 2}px`;
+    }
 }
 
 function initButtons() {
@@ -81,15 +84,12 @@ function initButtons() {
     const escapeHandler1 = (e) => {
         moveButton(btnNo1);
     };
+
     btnNo1.addEventListener('mouseenter', escapeHandler1);
     btnNo1.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // Evitar click
-        escapeHandler1(e);
-    });
-    btnNo1.addEventListener('click', (e) => {
         e.preventDefault();
-        moveButton(btnNo1); // Por si acaso
-    });
+        escapeHandler1(e);
+    }, { passive: false });
 
     // PANTALLA 2: Botón SÍ se escapa (al revés)
     const btnYes2 = document.getElementById('btn-y2');
@@ -107,30 +107,35 @@ function initButtons() {
 
         if (state.screen2ClickCount >= CONFIG.screen2Attempts) {
             state.canClickScreen2Yes = true;
-            btnYes2.classList.remove('btn-escape');
+
+            // RESET COMPLETAMENTE AL FLUJO NORMAL
+            btnYes2.style.position = '';
             btnYes2.style.left = '';
             btnYes2.style.top = '';
+
             btnYes2.innerText = CONFIG.messages.screen2Funny;
-            // Quitamos listeners para que sea clicable
+            // Quitamos listeners
             btnYes2.removeEventListener('mouseenter', escapeHandler2);
+            // No quitamos touchstart aquí porque tenemos lógica condicional dentro
         } else {
             moveButton(btnYes2);
         }
     };
 
     btnYes2.addEventListener('mouseenter', escapeHandler2);
-    // Para móvil usamos un truco: al intentar tocar, se mueve. 
-    // Pero si ya se puede clickar, permitimos el click.
     btnYes2.addEventListener('touchstart', (e) => {
         if (!state.canClickScreen2Yes) {
             e.preventDefault();
             escapeHandler2(e);
         }
-    });
+    }, { passive: false });
 
-    btnYes2.addEventListener('click', () => {
+    btnYes2.addEventListener('click', (e) => {
         if (state.canClickScreen2Yes) {
             goToScreen(3);
+        } else {
+            e.preventDefault(); // Evitar click si aún escapa
+            moveButton(btnYes2);
         }
     });
 }

@@ -112,22 +112,23 @@ body {
 .buttons-container {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 20px;
     margin-top: 20px;
     position: relative;
-    position: relative;
-    /* referencia para el botón que se escapa */
+    /* Container for escaping buttons */
     overflow: hidden;
-    /* evita que se "escape" fuera visualmente */
+    /* Prevent buttons from leaving */
     width: 100%;
-    height: 120px;
-    /* espacio para moverse sin salir */
-    border-radius: 16px;
-    /* para que el recorte quede bonito */
+    height: 220px;
+    /* Fixed height for containment (increased) */
     padding: 12px;
-    background: rgba(255, 255, 255, 0.35);
-    border: 1px dashed rgba(214, 51, 132, 0.25);
-    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .buttons-container {
+        height: 260px;
+    }
 }
 
 .btn {
@@ -166,11 +167,10 @@ body {
 
 /* Escaping Button Styles */
 .btn-escape {
-    position: absolute;
-    /* 🔥 clave: ahora se mueve dentro del contenedor */
+    position: fixed;
+    /* Easier to move around screen */
     transition: top 0.2s ease-out, left 0.2s ease-out;
-    z-index: 5;
-    will-change: top, left;
+    z-index: 100;
 }
 
 /* Screen 3 Grids */
@@ -188,18 +188,41 @@ body {
     margin-top: 2rem;
 }
 
+/* Accessibility */
+:focus-visible {
+    outline: 3px solid rgba(255, 77, 109, 0.8);
+    outline-offset: 3px;
+}
+
 @media (max-width: 768px) {
     .gift-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        /* 2x2 en móvil */
+        gap: 12px;
+    }
+
+    .gift-box {
+        height: 140px;
+        /* Reducido para móvil */
     }
 
     .title {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        /* Ajustar texto */
+        margin-bottom: 0.5rem;
     }
 
-    /* ✅ Añade esto */
-    .buttons-container {
-        height: 150px;
+    .container {
+        padding: 10px;
+        max-height: 92vh;
+        /* Evitar que se salga */
+        overflow-y: auto;
+        /* Scroll suave si es necesario */
+    }
+
+    .gift-content {
+        font-size: 1rem;
+        /* Texto de regalo más pequeño */
     }
 }
 
