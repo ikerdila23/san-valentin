@@ -21,6 +21,7 @@ const state = {
 
 /* FUNCIONES DE NAVEGACIÓN */
 function goToScreen(screenNum) {
+    resetEscapingButtons(); // Limpiar botones fantasmas al cambiar
     document.querySelectorAll('.screen').forEach(s => {
         s.classList.remove('active');
         s.classList.add('hidden');
@@ -35,22 +36,6 @@ function goToScreen(screenNum) {
     }
 }
 
-/* DEBUG MODE */
-const DEBUG = true;
-if (DEBUG) {
-    console.log("VERSION OVERLAY 1");
-    const debugDiv = document.createElement('div');
-    debugDiv.style.position = 'fixed';
-    debugDiv.style.top = '0';
-    debugDiv.style.right = '0';
-    debugDiv.style.background = 'black';
-    debugDiv.style.color = '#0f0';
-    debugDiv.style.padding = '5px';
-    debugDiv.style.zIndex = '9999';
-    debugDiv.innerText = 'OVERLAY ON';
-    document.body.appendChild(debugDiv);
-}
-
 /* FUNCIONES DE BOTONES ESCAPISTAS (Overlay Logic) */
 function ensureEscapeLayer() {
     let layer = document.getElementById('escape-layer');
@@ -62,9 +47,16 @@ function ensureEscapeLayer() {
         layer.style.pointerEvents = 'none';
         layer.style.zIndex = '999';
         document.body.appendChild(layer);
-        if (DEBUG) console.log("Created escape-layer dynamically");
     }
     return layer;
+}
+
+function resetEscapingButtons() {
+    // Busca todos los botones que estén escapando (en el overlay)
+    const escapingButtons = document.querySelectorAll('.escaping');
+    escapingButtons.forEach(btn => {
+        returnButtonToContainer(btn);
+    });
 }
 
 function moveButtonToOverlay(btn) {
@@ -72,25 +64,24 @@ function moveButtonToOverlay(btn) {
 
     const layer = ensureEscapeLayer();
     const container = btn.parentElement;
-    if (!container) return; // Should not happen
+    if (!container) return;
 
-    // Crear placeholder para mantener layout
+    // Crear placeholder
     const placeholder = document.createElement('div');
     placeholder.className = 'btn-placeholder';
     placeholder.style.width = `${btn.offsetWidth}px`;
     placeholder.style.height = `${btn.offsetHeight}px`;
     placeholder.style.display = 'inline-block';
-    placeholder.id = `idx-${Math.random().toString(36).substr(2, 9)}`;
 
     // Insertar placeholder y mover botón
     container.insertBefore(placeholder, btn);
 
-    // Guardar posición inicial absoluta para evitar saltos visuales
+    // Guardar posición visual actual
     const rect = btn.getBoundingClientRect();
 
     layer.appendChild(btn);
 
-    // Guardar ref al placeholder en el botón
+    // Guardar ref al placeholder
     btn._placeholderRef = placeholder;
 
     // Config style fixed
@@ -98,13 +89,8 @@ function moveButtonToOverlay(btn) {
     btn.style.left = `${rect.left}px`;
     btn.style.top = `${rect.top}px`;
     btn.style.zIndex = '1000';
-    btn.style.pointerEvents = 'auto'; // Asegurar click interactuable
+    btn.style.pointerEvents = 'auto';
     btn.classList.add('escaping');
-
-    if (DEBUG) {
-        console.log("moved to overlay", btn.id);
-        console.log("Parent is now:", btn.parentElement.id);
-    }
 }
 
 function returnButtonToContainer(btn) {
@@ -125,8 +111,6 @@ function returnButtonToContainer(btn) {
     btn.style.pointerEvents = '';
     btn.classList.remove('escaping');
     delete btn._placeholderRef;
-
-    if (DEBUG) console.log("Returned to container");
 }
 
 function moveButton(btn) {
@@ -155,23 +139,16 @@ function moveButton(btn) {
         newY = margin + Math.random() * (height - btnRect.height - margin * 2);
 
         safe++;
-        if (DEBUG && safe === 1) {
-            const dist = Math.hypot(newX - currentX, newY - currentY);
-            // console.log(`Attempt 1 dist: ${dist}`);
-        }
     } while (Math.hypot(newX - currentX, newY - currentY) < minJump && safe < 15);
 
     // Failsafe centro si se sale (aunque math random con margin lo evita)
     if (newX < 0 || newX > width - btnRect.width || newY < 0 || newY > height - btnRect.height) {
         newX = (width - btnRect.width) / 2;
         newY = (height - btnRect.height) / 2;
-        if (DEBUG) console.warn("Failsafe triggered");
     }
 
     btn.style.left = `${newX}px`;
     btn.style.top = `${newY}px`;
-
-    if (DEBUG) console.log(`Moved to ${newX}, ${newY}`);
 }
 
 function initButtons() {
@@ -206,6 +183,8 @@ function initButtons() {
 
             // VOLVER A CASA
             returnButtonToContainer(btnYes2);
+            // También aseguramos limpieza general por si acaso
+            resetEscapingButtons();
 
             btnYes2.innerText = CONFIG.messages.screen2Funny;
             // Quitamos listeners
