@@ -1,6 +1,11 @@
 /* CONFIGURACIÓN */
 const CONFIG = {
-    screen2Attempts: 8, // Intentos antes de que el botón Sí se deje pulsar
+    version: '1.2',
+    partnerName: "", // Poner nombre aquí, e.g. "Laura"
+    sinceDate: "", // Texto opcional, e.g. "Desde 2023... 💘"
+    photoUrl: "", // Ruta opcional, e.g. "./assets/us.jpg"
+    soundEnabled: true,
+    screen2Attempts: 8,
     gifts: [
         "Vale por un texto bonito 📝",
         "Vale por un día de Spa 🧖‍♀️",
@@ -9,7 +14,9 @@ const CONFIG = {
     ],
     messages: {
         screen2No: "No acepto esa respuesta 😌",
-        screen2Funny: "Vale, vale... 😌"
+        screen2Funny: "Vale, vale... 😌",
+        toastAccept: "¡Sabía que dirías que sí! 💖",
+        miniTexts: ["Casi me pillas 😳", "Uy 😅", "No tan rápido 😈", "Muejeje 🏃‍♂️", "Inténtalo 😜"]
     },
     escapeTextsScreen1: ["No 😅", "¿Seguro? 😳", "Nop 🤭", "Inténtalo 😈", "Casi… 😂", "Uy 😏"],
     escapeTextsScreen2: ["Sí 😏", "Píllame 😳", "No tan rápido 😈", "Casi lo logras 😅", "Última 😜", "Ok ok… 🙈"]
@@ -20,17 +27,24 @@ const state = {
     screen2ClickCount: 0,
     canClickScreen2Yes: false,
     textIndex1: 0,
-    textIndex2: 0
+    textIndex2: 0,
+    openedGifts: 0
 };
 
-/* AUDIO CONTEXT PARA POP */
+/* AUDIO CONTEXT */
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new AudioContext();
+let audioCtx = new AudioContext();
+
+function toggleSound() {
+    CONFIG.soundEnabled = !CONFIG.soundEnabled;
+    const btn = document.getElementById('sound-toggle');
+    btn.innerText = CONFIG.soundEnabled ? '🔊' : '🔇';
+}
 
 function playPop() {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (!CONFIG.soundEnabled) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
@@ -38,11 +52,9 @@ function playPop() {
     gain.connect(audioCtx.destination);
 
     osc.type = 'sine';
-    // Frecuencia "pop"
     osc.frequency.setValueAtTime(600, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
 
-    // Envelope corto
     gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
 
@@ -50,54 +62,121 @@ function playPop() {
     osc.stop(audioCtx.currentTime + 0.1);
 }
 
-/* MINI CONFETI */
-function spawnMiniConfetti(element) {
-    const colors = ['#ff4d6d', '#ff8fa3', '#fff', '#ffc107', '#ff0055'];
-    const particleCount = 20;
+/* PERSONALIZATION */
+function initPersonalization() {
+    // Inject Version
+    const scripts = document.querySelectorAll('script[src^="./app.js"]');
+    if (scripts.length > 0) scripts[0].src = `./app.js?v=${CONFIG.version}`;
+    const links = document.querySelectorAll('link[href^="./styles.css"]');
+    if (links.length > 0) links[0].href = `./styles.css?v=${CONFIG.version}`;
 
-    for (let i = 0; i < particleCount; i++) {
-        const confetto = document.createElement('div');
-        confetto.classList.add('mini-confetto');
-
-        // Color aleatorio
-        confetto.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
-        // Dirección aleatoria
-        const angle = Math.random() * Math.PI * 2;
-        const velocity = 50 + Math.random() * 100; // Distancia de vuelo
-        const tx = Math.cos(angle) * velocity;
-        const ty = Math.sin(angle) * velocity;
-
-        confetto.style.setProperty('--tx', `${tx}px`);
-        confetto.style.setProperty('--ty', `${ty}px`);
-
-        element.appendChild(confetto);
-
-        // Limpieza
-        setTimeout(() => {
-            confetto.remove();
-        }, 800);
+    // Name
+    if (CONFIG.partnerName) {
+        document.getElementById('partner-name-display').innerText = `, ${CONFIG.partnerName}`;
     }
-}
+    // Date
+    if (CONFIG.sinceDate) {
+        document.getElementById('since-date-display').innerText = CONFIG.sinceDate;
+    }
+    // Photo
+    if (CONFIG.photoUrl) {
+        const photoContainer = document.getElementById('partner-photo-container');
+        const img = document.getElementById('partner-photo');
+        img.src = CONFIG.photoUrl;
+        photoContainer.classList.remove('hidden');
+    }
 
-/* FUNCIONES DE NAVEGACIÓN */
-function goToScreen(screenNum) {
-    resetEscapingButtons(); // Limpiar botones fantasmas al cambiar
-    document.querySelectorAll('.screen').forEach(s => {
-        s.classList.remove('active');
-        s.classList.add('hidden');
+    // Sound Toggle Listener
+    document.getElementById('sound-toggle').addEventListener('click', toggleSound);
+
+    // Listen for Button Yes Screen 1
+    document.getElementById('btn-y1').addEventListener('click', () => {
+        // Pop animation
+        const btn = document.getElementById('btn-y1');
+        btn.style.transform = "scale(0.95)";
+        setTimeout(() => btn.style.transform = "scale(1)", 100);
+        goToScreen(2);
     });
+}
 
-    const target = document.getElementById(`screen-${screenNum}`);
-    target.classList.remove('hidden');
-    target.classList.add('active');
+/* ESCAPE LOGIC (Overlay + Shake) */
+function makeButtonShake(btn) {
+    btn.classList.add('shake');
+    setTimeout(() => {
+        btn.classList.remove('shake');
+    }, 300);
 
-    if (screenNum === 3) {
-        startConfetti();
+    // Vibrate
+    if (CONFIG.soundEnabled && navigator.vibrate) navigator.vibrate(25);
+}
+
+function showMiniTargetMessage(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const msg = document.createElement('div');
+    msg.className = 'btn-msg';
+    msg.innerText = CONFIG.messages.miniTexts[Math.floor(Math.random() * CONFIG.messages.miniTexts.length)];
+
+    container.innerHTML = ''; // Limpiar anterior
+    container.appendChild(msg);
+
+    setTimeout(() => {
+        msg.remove();
+    }, 700);
+}
+
+function moveButton(btn) {
+    if (!btn.classList.contains('escaping')) {
+        makeButtonShake(btn);
+        // Delay move slightly for shake effect
+        setTimeout(() => moveButtonAction(btn), 120);
+    } else {
+        moveButtonAction(btn);
     }
 }
 
-/* FUNCIONES DE BOTONES ESCAPISTAS (Overlay Logic) */
+function moveButtonAction(btn) {
+    if (!btn.classList.contains('escaping')) moveButtonToOverlay(btn);
+
+    // Dynamic Text
+    if (btn.id === 'btn-n1') {
+        state.textIndex1 = (state.textIndex1 + 1) % CONFIG.escapeTextsScreen1.length;
+        btn.innerText = CONFIG.escapeTextsScreen1[state.textIndex1];
+        showMiniTargetMessage('msg-container-1');
+    } else if (btn.id === 'btn-y2') {
+        state.textIndex2 = (state.textIndex2 + 1) % CONFIG.escapeTextsScreen2.length;
+        btn.innerText = CONFIG.escapeTextsScreen2[state.textIndex2];
+        showMiniTargetMessage('msg-container-2');
+    }
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const btnRect = btn.getBoundingClientRect();
+    const margin = 20;
+
+    const isMobile = width < 768;
+    const minJump = isMobile ? 180 : 240;
+
+    let newX, newY, safe = 0;
+    const currentX = btnRect.left;
+    const currentY = btnRect.top;
+
+    do {
+        newX = margin + Math.random() * (width - btnRect.width - margin * 2);
+        newY = margin + Math.random() * (height - btnRect.height - margin * 2);
+        safe++;
+    } while (Math.hypot(newX - currentX, newY - currentY) < minJump && safe < 15);
+
+    if (newX < 0 || newX > width - btnRect.width || newY < 0 || newY > height - btnRect.height) {
+        newX = (width - btnRect.width) / 2;
+        newY = (height - btnRect.height) / 2;
+    }
+
+    btn.style.left = `${newX}px`;
+    btn.style.top = `${newY}px`;
+}
+
 function ensureEscapeLayer() {
     let layer = document.getElementById('escape-layer');
     if (!layer) {
@@ -112,40 +191,24 @@ function ensureEscapeLayer() {
     return layer;
 }
 
-function resetEscapingButtons() {
-    // Busca todos los botones que estén escapando (en el overlay)
-    const escapingButtons = document.querySelectorAll('.escaping');
-    escapingButtons.forEach(btn => {
-        returnButtonToContainer(btn);
-    });
-}
-
 function moveButtonToOverlay(btn) {
     if (btn.classList.contains('escaping')) return;
-
     const layer = ensureEscapeLayer();
     const container = btn.parentElement;
     if (!container) return;
 
-    // Crear placeholder
+    // Placeholder
     const placeholder = document.createElement('div');
     placeholder.className = 'btn-placeholder';
     placeholder.style.width = `${btn.offsetWidth}px`;
     placeholder.style.height = `${btn.offsetHeight}px`;
     placeholder.style.display = 'inline-block';
-
-    // Insertar placeholder y mover botón
     container.insertBefore(placeholder, btn);
 
-    // Guardar posición visual actual
     const rect = btn.getBoundingClientRect();
-
     layer.appendChild(btn);
-
-    // Guardar ref al placeholder
     btn._placeholderRef = placeholder;
 
-    // Config style fixed
     btn.style.position = 'fixed';
     btn.style.left = `${rect.left}px`;
     btn.style.top = `${rect.top}px`;
@@ -156,7 +219,6 @@ function moveButtonToOverlay(btn) {
 
 function returnButtonToContainer(btn) {
     if (!btn._placeholderRef) return;
-
     const placeholder = btn._placeholderRef;
     const container = placeholder.parentElement;
 
@@ -174,73 +236,22 @@ function returnButtonToContainer(btn) {
     delete btn._placeholderRef;
 }
 
-function moveButton(btn) {
-    // Si no está en modo escape, iniciarlo
-    if (!btn.classList.contains('escaping')) {
-        moveButtonToOverlay(btn);
-    }
-
-    // CAMBIO DE TEXTO AL MOVERSE
-    if (btn.id === 'btn-n1') {
-        state.textIndex1 = (state.textIndex1 + 1) % CONFIG.escapeTextsScreen1.length;
-        btn.innerText = CONFIG.escapeTextsScreen1[state.textIndex1];
-    } else if (btn.id === 'btn-y2') {
-        state.textIndex2 = (state.textIndex2 + 1) % CONFIG.escapeTextsScreen2.length;
-        btn.innerText = CONFIG.escapeTextsScreen2[state.textIndex2];
-    }
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const btnRect = btn.getBoundingClientRect();
-    const margin = 20; // Seguridad bordes
-
-    // Distancia mínima de salto según dispositivo
-    const isMobile = width < 768;
-    const minJump = isMobile ? 180 : 240;
-
-    let newX, newY;
-    let safe = 0;
-    const currentX = btnRect.left;
-    const currentY = btnRect.top;
-
-    // Reintentar para conseguir salto grande
-    do {
-        newX = margin + Math.random() * (width - btnRect.width - margin * 2);
-        newY = margin + Math.random() * (height - btnRect.height - margin * 2);
-        safe++;
-    } while (Math.hypot(newX - currentX, newY - currentY) < minJump && safe < 15);
-
-    // Failsafe centro si se sale (aunque math random con margin lo evita)
-    if (newX < 0 || newX > width - btnRect.width || newY < 0 || newY > height - btnRect.height) {
-        newX = (width - btnRect.width) / 2;
-        newY = (height - btnRect.height) / 2;
-    }
-
-    btn.style.left = `${newX}px`;
-    btn.style.top = `${newY}px`;
+function resetEscapingButtons() {
+    document.querySelectorAll('.escaping').forEach(btn => returnButtonToContainer(btn));
 }
 
 function initButtons() {
-    // PANTALLA 1: Botón NO se escapa
     const btnNo1 = document.getElementById('btn-n1');
-    const escapeHandler1 = (e) => {
-        moveButton(btnNo1);
-    };
+    const escapeHandler1 = (e) => { moveButton(btnNo1); };
 
     btnNo1.addEventListener('mouseenter', escapeHandler1);
-    btnNo1.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        escapeHandler1(e);
-    }, { passive: false });
+    btnNo1.addEventListener('click', (e) => { e.preventDefault(); moveButton(btnNo1); }); // Fix para click en movil a veces
+    btnNo1.addEventListener('touchstart', (e) => { e.preventDefault(); escapeHandler1(e); }, { passive: false });
 
-    // PANTALLA 2: Botón SÍ se escapa (al revés)
     const btnYes2 = document.getElementById('btn-y2');
     const btnNo2 = document.getElementById('btn-n2');
 
-    // Botón No de pantalla 2
-    btnNo2.addEventListener('click', () => {
-        alert(CONFIG.messages.screen2No);
-    });
+    btnNo2.addEventListener('click', () => { alert(CONFIG.messages.screen2No); });
 
     const escapeHandler2 = (e) => {
         if (state.canClickScreen2Yes) return;
@@ -249,16 +260,12 @@ function initButtons() {
 
         if (state.screen2ClickCount >= CONFIG.screen2Attempts) {
             state.canClickScreen2Yes = true;
-
-            // VOLVER A CASA
             returnButtonToContainer(btnYes2);
-            // También aseguramos limpieza general por si acaso
             resetEscapingButtons();
-
             btnYes2.innerText = CONFIG.messages.screen2Funny;
-            // Quitamos listeners
             btnYes2.removeEventListener('mouseenter', escapeHandler2);
-            // No quitamos touchstart aquí porque tenemos lógica condicional dentro
+            // Mostrar Toast
+            showToast(CONFIG.messages.toastAccept);
         } else {
             moveButton(btnYes2);
         }
@@ -266,37 +273,108 @@ function initButtons() {
 
     btnYes2.addEventListener('mouseenter', escapeHandler2);
     btnYes2.addEventListener('touchstart', (e) => {
-        if (!state.canClickScreen2Yes) {
-            e.preventDefault();
-            escapeHandler2(e);
-        }
+        if (!state.canClickScreen2Yes) { e.preventDefault(); escapeHandler2(e); }
     }, { passive: false });
 
     btnYes2.addEventListener('click', (e) => {
         if (state.canClickScreen2Yes) {
-            goToScreen(3);
+            showToast(CONFIG.messages.toastAccept); // Toast también al clickar definitivo
+            setTimeout(() => goToScreen(3), 1000); // Pequeño delay para ver el toast
         } else {
-            e.preventDefault(); // Evitar click si aún escapa
-            moveButton(btnYes2);
+            e.preventDefault(); moveButton(btnYes2);
         }
     });
 }
 
-/* FUNCIONES DE REGALOS */
+/* UI HELPERS */
+function showToast(text) {
+    const toast = document.getElementById('toast');
+    toast.innerText = text;
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3500);
+}
+
+function goToScreen(screenNum) {
+    resetEscapingButtons();
+    document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active');
+        s.classList.add('hidden');
+    });
+
+    const target = document.getElementById(`screen-${screenNum}`);
+    target.classList.remove('hidden');
+    target.classList.add('active');
+
+    if (screenNum === 3) startConfetti();
+}
+
+/* REGALOS & MODAL */
+function spawnMiniConfetti(element) {
+    const colors = ['#ff4d6d', '#ff8fa3', '#fff', '#ffc107', '#ff0055'];
+    const particleCount = 20;
+
+    for (let i = 0; i < particleCount; i++) {
+        const confetto = document.createElement('div');
+        confetto.classList.add('mini-confetto');
+        confetto.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 50 + Math.random() * 100;
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+
+        confetto.style.setProperty('--tx', `${tx}px`);
+        confetto.style.setProperty('--ty', `${ty}px`);
+
+        element.appendChild(confetto);
+        setTimeout(() => confetto.remove(), 800);
+    }
+}
+
 function openGift(element, index) {
     if (element.classList.contains('open')) return;
 
-    playPop(); // SONIDO
-    spawnMiniConfetti(element); // CONFETI
+    playPop();
+    spawnMiniConfetti(element);
+    if (navigator.vibrate) navigator.vibrate(30);
 
+    // Bounce Animation
+    element.classList.add('bounce');
     element.classList.add('open');
+
     const contentDiv = element.querySelector('.gift-content');
     contentDiv.innerText = CONFIG.gifts[index];
+
+    state.openedGifts++;
+
+    if (state.openedGifts === 4) {
+        setTimeout(showCompletionModal, 1500);
+    }
 }
 
-/* CONFETI */
+function showCompletionModal() {
+    const modal = document.getElementById('completion-modal');
+    modal.classList.remove('hidden');
+    playPop();
+}
+
+function closeModal() {
+    const modal = document.getElementById('completion-modal');
+    modal.classList.add('hidden');
+}
+
+function finishDate(choice) {
+    alert(`Perfecto, ${choice.toLowerCase()}. ¡Te quiero! 😘`);
+    closeModal();
+    startConfetti(); // Más confeti
+}
+
+/* CONFETI BACKGROUND (Screen 3) */
 function startConfetti() {
     const canvas = document.getElementById('confetti-canvas');
+    if (!canvas) return; // Paranoia check
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;

@@ -323,7 +323,252 @@ body {
     opacity: 0;
 }
 
-/* Mini Confetti */
+/* Animations */
+@keyframes shake {
+    0% {
+        transform: translate(1px, 1px) rotate(0deg);
+    }
+
+    10% {
+        transform: translate(-1px, -2px) rotate(-1deg);
+    }
+
+    20% {
+        transform: translate(-3px, 0px) rotate(1deg);
+    }
+
+    30% {
+        transform: translate(3px, 2px) rotate(0deg);
+    }
+
+    40% {
+        transform: translate(1px, -1px) rotate(1deg);
+    }
+
+    50% {
+        transform: translate(-1px, 2px) rotate(-1deg);
+    }
+
+    60% {
+        transform: translate(-3px, 1px) rotate(0deg);
+    }
+
+    70% {
+        transform: translate(3px, 1px) rotate(-1deg);
+    }
+
+    80% {
+        transform: translate(-1px, -1px) rotate(1deg);
+    }
+
+    90% {
+        transform: translate(1px, 2px) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(1px, -2px) rotate(-1deg);
+    }
+}
+
+.shake {
+    animation: shake 0.3s;
+    animation-iteration-count: 1;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Sound Toggle */
+.sound-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.sound-toggle:hover {
+    transform: scale(1.1);
+}
+
+.sound-toggle:focus-visible {
+    outline: 3px solid rgba(255, 77, 109, 0.8);
+    outline-offset: 2px;
+}
+
+/* Personalization */
+.partner-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 5px 15px rgba(255, 77, 109, 0.3);
+    margin-bottom: 1rem;
+    animation: popIn 0.6s ease-out;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Msg Container */
+.btn-msg-container {
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    height: 20px;
+}
+
+.btn-msg {
+    font-size: 0.9rem;
+    color: #ff4d6d;
+    font-weight: 600;
+    animation: fadeUp 0.8s forwards;
+}
+
+@keyframes fadeUp {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    20% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    80% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    font-weight: 600;
+    color: #ff0055;
+    animation: slideUpToast 0.5s ease-out, fadeOutToast 0.5s ease-in 3.5s forwards;
+    white-space: nowrap;
+}
+
+@keyframes slideUpToast {
+    from {
+        transform: translate(-50%, 100px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOutToast {
+    to {
+        opacity: 0;
+        display: none;
+    }
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+    animation: popIn 0.3s ease-out;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 90%;
+    width: 400px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Enhancements for Gift Box */
+.gift-box:focus-visible {
+    outline: 3px solid rgba(255, 77, 109, 0.55);
+    outline-offset: 4px;
+}
+
+.gift-box.bounce {
+    animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Mini Confetti (Updated with existing) */
 .mini-confetto {
     position: absolute;
     width: 6px;
@@ -348,29 +593,7 @@ body {
     }
 }
 
-.gift-content {
-    position: absolute;
-    width: 90%;
-    height: 90%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-size: 1.2rem;
-    color: var(--text-color);
-    font-weight: 600;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.5s 0.2s;
-    z-index: 1;
-}
-
-.gift-box.open .gift-content {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Confetti */
+/* Canvas Confetti */
 #confetti-canvas {
     position: absolute;
     top: 0;
