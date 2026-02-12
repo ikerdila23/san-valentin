@@ -1,6 +1,6 @@
 /* CONFIGURACIÓN */
 const CONFIG = {
-    version: '1.3',
+    version: '1.4',
     partnerName: "", // Poner nombre aquí, e.g. "Laura"
     sinceDate: "", // Texto opcional, e.g. "Desde 2023... 💘"
     photoUrl: "", // Ruta opcional, e.g. "./assets/us.jpg"
@@ -9,22 +9,26 @@ const CONFIG = {
     gifts: [
         {
             title: "Vale Especial 📝",
-            message: "Vale por un texto bonito cuando más lo necesites.",
+            message: "Vale por un texto bonito cuando más lo necesites. Solo tienes que pedírmelo y me pondré inspirad@ para escribirte lo que sientes.",
+            image: "", // Inserta URL de imagen si quieres: "./assets/foto1.jpg"
             footer: "Con amor, yo 💌"
         },
         {
             title: "Relax Time 🧖‍♀️",
-            message: "Vale por un día de Spa, masajes y mimos.",
+            message: "Vale por un día de Spa, masajes y mimos. Prepárate para relajarte completamente.",
+            image: "",
             footer: "Para ti ❤️"
         },
         {
             title: "Besos 💋",
-            message: "Vale por una sesión de besos infinitos (sin caducidad).",
+            message: "Vale por una sesión de besos infinitos (sin caducidad). Canjeable en cualquier momento y lugar.",
+            image: "",
             footer: "Te quiero 💖"
         },
         {
             title: "Sorpresa 🤫",
-            message: "Vale por un Plan Secreto que te encantará.",
+            message: "Vale por un Plan Secreto que te encantará. Es algo que sé que tienes ganas de hacer...",
+            image: "",
             footer: "Juntos 👫"
         }
     ],
@@ -111,6 +115,11 @@ function initPersonalization() {
         btn.style.transform = "scale(0.95)";
         setTimeout(() => btn.style.transform = "scale(1)", 100);
         goToScreen(2);
+    });
+
+    // ESC Key listener for Modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeGiftModal();
     });
 }
 
@@ -371,41 +380,61 @@ function spawnMiniConfetti(element) {
 }
 
 function openGift(element, index) {
-    if (element.classList.contains('open')) return;
+    // Si la caja ya está abierta, también permitimos abrir el modal de nuevo para volver a leer
+    // O si prefieres solo la primera vez, deja el check. 
+    // Usuario dice "cuando haga click en un regalo... quiero que aparezca overlay".
+    // Así que siempre abrimos el modal.
 
     playPop();
     spawnMiniConfetti(element);
     if (navigator.vibrate) navigator.vibrate(30);
 
-    // Bounce Animation
-    element.classList.add('bounce');
-    element.classList.add('open');
+    // Visualmente "abrimos" la caja si no lo estaba
+    if (!element.classList.contains('open')) {
+        element.classList.add('bounce');
+        element.classList.add('open');
+    }
 
-    const contentDiv = element.querySelector('.gift-content');
-    const giftData = CONFIG.gifts[index];
+    // Abrir Modal
+    openGiftModal(CONFIG.gifts[index]);
+}
 
-    // Create structured HTML
-    const note = document.createElement('div');
-    note.className = 'gift-note';
+/* MODAL LOGIC */
+function openGiftModal(giftData) {
+    const modal = document.getElementById('gift-modal');
+    if (!modal) return;
 
-    const title = document.createElement('div');
-    title.className = 'gift-note-title';
-    title.textContent = giftData.title;
+    // Populate data
+    document.getElementById('modal-title').innerText = giftData.title;
+    document.getElementById('modal-message').innerText = giftData.message;
+    document.getElementById('modal-footer').innerText = giftData.footer;
 
-    const message = document.createElement('div');
-    message.className = 'gift-note-message';
-    message.textContent = giftData.message;
+    const imgContainer = document.getElementById('modal-image-container');
+    const img = document.getElementById('modal-image');
 
-    const footer = document.createElement('div');
-    footer.className = 'gift-note-footer';
-    footer.textContent = giftData.footer;
+    if (giftData.image) {
+        img.src = giftData.image;
+        imgContainer.classList.remove('hidden');
+    } else {
+        imgContainer.classList.add('hidden');
+    }
 
-    note.appendChild(title);
-    note.appendChild(message);
-    note.appendChild(footer);
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Block scroll
+}
 
-    contentDiv.innerHTML = '';
-    contentDiv.appendChild(note);
+function closeGiftModal(event) {
+    // If triggered by event (click outside), check target
+    if (event && !event.target.classList.contains('modal-overlay')) {
+        return;
+    }
+
+    const modal = document.getElementById('gift-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // Restore scroll
+    }
 }
 
 /* CONFETI BACKGROUND (Screen 3) */
