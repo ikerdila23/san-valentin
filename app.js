@@ -182,37 +182,45 @@ function moveToEscapeLayer(btn) {
         layer.appendChild(btn);
     }
     btn.classList.add("btn-escape");
+
+    // Forzar posición fixed limpia
     btn.style.position = "fixed";
+    btn.style.zIndex = "1000";
     btn.style.pointerEvents = "auto";
 }
 
 function resetEscapingButtons() {
-    // Por si se queda algún botón en escape-layer
     const layer = ensureEscapeLayer();
     const btnN1 = document.getElementById("btn-n1");
     const btnY2 = document.getElementById("btn-y2");
 
-    // devolvemos a sus containers si procede
-    const c1 = document.querySelector("#screen-1 .buttons-container");
-    const c2 = document.querySelector("#screen-2 .buttons-container");
+    const container1 = document.querySelector("#screen-1 .buttons-container");
+    const container2 = document.querySelector("#screen-2 .buttons-container");
 
-    if (btnN1 && c1 && btnN1.parentElement === layer) {
-        c1.appendChild(btnN1);
-        btnN1.classList.remove("btn-escape");
-        btnN1.style.position = "";
-        btnN1.style.left = "";
-        btnN1.style.top = "";
-    }
-    if (btnY2 && c2 && btnY2.parentElement === layer) {
-        c2.appendChild(btnY2);
-        btnY2.classList.remove("btn-escape");
-        btnY2.style.position = "";
-        btnY2.style.left = "";
-        btnY2.style.top = "";
-    }
+    // Función helper interna para restaurar
+    const restore = (btn, container) => {
+        if (!btn || !container) return;
+        if (btn.parentElement === layer || btn.classList.contains("btn-escape")) {
+            container.appendChild(btn); // Vuelve al flujo normal
+            btn.classList.remove("btn-escape");
 
-    // limpieza visual
-    while (layer.firstChild) layer.removeChild(layer.firstChild);
+            // Limpieza TOTAL de estilos inline que hayamos puesto
+            btn.style.position = "";
+            btn.style.left = "";
+            btn.style.top = "";
+            btn.style.zIndex = "";
+            btn.style.transform = "";
+            btn.style.pointerEvents = "";
+        }
+    };
+
+    restore(btnN1, container1);
+    restore(btnY2, container2);
+
+    // Limpieza paranoica del layer
+    while (layer.firstChild) {
+        layer.removeChild(layer.firstChild);
+    }
 }
 
 /* =========================
@@ -385,6 +393,7 @@ function initButtons() {
     });
 
     // Pantalla 2: SÍ escapa hasta intentos
+    // Pantalla 2: SÍ escapa hasta intentos
     const escapeY2 = (e) => {
         if (state.screen2CanClickYes) return;
 
@@ -394,7 +403,7 @@ function initButtons() {
         if (state.screen2Count >= CONFIG.screen2Attempts) {
             state.screen2CanClickYes = true;
 
-            // devolver botón al contenedor normal
+            // RESTAURAR AL CONTENEDOR (USANDO LÓGICA MANUAL LIMPIA)
             const cont = document.querySelector("#screen-2 .buttons-container");
             cont.appendChild(btnY2);
 
@@ -402,6 +411,9 @@ function initButtons() {
             btnY2.style.position = "";
             btnY2.style.left = "";
             btnY2.style.top = "";
+            btnY2.style.zIndex = "";
+            btnY2.style.transform = "";
+
             btnY2.textContent = "Vale, vale… 😌";
 
             showTinyMessage(2);

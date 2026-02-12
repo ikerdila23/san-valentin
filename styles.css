@@ -138,10 +138,13 @@ body {
 .buttons-container {
     display: flex;
     justify-content: center;
-    gap: 16px;
-    margin-top: 6px;
-    min-height: 60px;
-    position: relative;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    /* clave para móvil */
+    min-height: 64px;
+    margin-top: 10px;
+    width: 100%;
 }
 
 .btn {
@@ -154,7 +157,19 @@ body {
     font-weight: 700;
     transition: transform 0.18s, box-shadow 0.18s;
     white-space: nowrap;
-    min-height: 46px;
+    min-height: 48px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 480px) {
+    .btn {
+        width: min(240px, 80vw);
+        /* evita solape */
+        font-size: 1.1rem;
+    }
 }
 
 .btn-yes {
@@ -183,6 +198,7 @@ body {
     z-index: 1000;
     pointer-events: auto;
     /* él sí debe ser clicable */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 /* Regalos grid */
@@ -191,11 +207,12 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
     margin-top: 18px;
+    width: 100%;
 }
 
 .gift-box {
     background: white;
-    height: clamp(140px, 18vh, 200px);
+    height: clamp(140px, 20vh, 210px);
     border-radius: 16px;
     cursor: pointer;
     position: relative;
@@ -203,10 +220,21 @@ body {
     overflow: hidden;
     border: 2px solid rgba(255, 77, 109, 0.18);
     transform: translateZ(0);
+    transition: transform 0.2s;
 }
 
 .gift-box:hover {
     transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+    .gift-box {
+        height: 150px;
+    }
+
+    .gift-grid {
+        gap: 12px;
+    }
 }
 
 /* Tapa */
@@ -221,7 +249,6 @@ body {
     justify-content: center;
     align-items: center;
     pointer-events: auto;
-    /* cerrada: ok */
 }
 
 /* Cintas del regalo */
@@ -253,23 +280,14 @@ body {
 .gift-box.open .gift-lid {
     transform: rotateX(110deg);
     pointer-events: none;
-    /* CLAVE: deja clicar contenido */
 }
 
+/* OCULTAR INTERROGACIÓN OBLIGATORIO */
 .gift-body {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    font-size: 4rem;
-    color: rgba(255, 77, 109, 0.7);
-    z-index: 1;
-    user-select: none;
-    pointer-events: none;
-    /* no bloquear clicks */
+    display: none !important;
 }
 
-/* Contenido del regalo (donde va el botón o el texto) */
+/* Contenido del regalo */
 .gift-content {
     position: absolute;
     inset: 0;
@@ -286,16 +304,13 @@ body {
     transform: translateY(14px);
     transition: opacity .35s ease, transform .35s ease;
     z-index: 10;
-    /* CLAVE: por encima */
     pointer-events: none;
-    /* Default: no bloquea */
 }
 
 .gift-box.open .gift-content {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
-    /* Open: clicable */
 }
 
 /* Preview con botón */
