@@ -100,15 +100,15 @@
 
     <!-- Letter Overlay -->
     <!-- Letter Overlay -->
-    <div id="letter-overlay" class="letter-overlay hidden" aria-hidden="true">
-        <div class="letter-backdrop" data-action="close-letter"></div>
-
-        <div class="letter-card" role="dialog" aria-modal="true" aria-label="Carta">
-            <button class="letter-x" data-action="close-letter" aria-label="Cerrar">✕</button>
-            <h2 id="letter-title" class="letter-title"></h2>
-            <div id="letter-body" class="letter-body"></div>
-            <img id="letter-img" class="letter-img" alt="Nuestra foto">
-            <button class="btn btn-yes" data-action="close-letter">Cerrar</button>
+    <!-- Letter Overlay -->
+    <div id="letter-overlay" class="letter-overlay hidden">
+        <div class="letter-backdrop" data-close-letter="1"></div>
+        <div class="letter-card">
+            <button class="letter-x" data-close-letter="1">✕</button>
+            <h2 id="letter-title"></h2>
+            <div id="letter-body"></div>
+            <img id="letter-img" alt="Nuestra foto">
+            <button class="btn btn-yes" data-close-letter="1">Cerrar</button>
         </div>
     </div>
 
