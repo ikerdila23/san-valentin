@@ -16,6 +16,7 @@ const CONFIG = {
     letterGift: {
         title: "Tu cartita 💌",
         buttonLabel: "Ver texto",
+        image: "./assets/nosotros.jpg",
         message: `Bueno annetxus si no calculo mal estarás leyendo este mensaje conmigo en Santander o Oviedo.
 
 Lo primero que te quiero decir es que eres lo mejor que me ha pasado en la vida y que te quiero un montonazo.
@@ -451,7 +452,7 @@ function openLetterOverlay() {
     // Content
     title.innerText = CONFIG.letterGift.title;
     body.innerText = CONFIG.letterGift.message;
-    img.src = "./assets/nosotros.jpg";
+    img.src = CONFIG.letterGift.image;
     img.onerror = () => { img.style.display = 'none'; };
 
     // Logic
@@ -480,8 +481,6 @@ document.addEventListener("click", (e) => {
     const openBtn = e.target.closest('[data-action="open-letter"]');
     if (openBtn) {
         e.stopPropagation();
-        alert("OPEN LETTER OK");
-        console.log("OPEN LETTER OK");
         openLetterOverlay();
         return;
     }
