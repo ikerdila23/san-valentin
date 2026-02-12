@@ -1,6 +1,6 @@
 /* CONFIGURACIÓN */
 const CONFIG = {
-    version: '1.4',
+    version: '1.5',
     partnerName: "", // Poner nombre aquí, e.g. "Laura"
     sinceDate: "", // Texto opcional, e.g. "Desde 2023... 💘"
     photoUrl: "", // Ruta opcional, e.g. "./assets/us.jpg"
@@ -8,27 +8,31 @@ const CONFIG = {
     screen2Attempts: 8,
     gifts: [
         {
+            type: "text",
             title: "Vale Especial 📝",
+            buttonLabel: "Ver vale",
             message: "Vale por un texto bonito cuando más lo necesites. Solo tienes que pedírmelo y me pondré inspirad@ para escribirte lo que sientes.",
-            image: "", // Inserta URL de imagen si quieres: "./assets/foto1.jpg"
             footer: "Con amor, yo 💌"
         },
         {
+            type: "text",
             title: "Relax Time 🧖‍♀️",
+            buttonLabel: "Ver sorpresa",
             message: "Vale por un día de Spa, masajes y mimos. Prepárate para relajarte completamente.",
-            image: "",
             footer: "Para ti ❤️"
         },
         {
+            type: "text",
             title: "Besos 💋",
+            buttonLabel: "Canjear",
             message: "Vale por una sesión de besos infinitos (sin caducidad). Canjeable en cualquier momento y lugar.",
-            image: "",
             footer: "Te quiero 💖"
         },
         {
+            type: "text",
             title: "Sorpresa 🤫",
+            buttonLabel: "Descubrir",
             message: "Vale por un Plan Secreto que te encantará. Es algo que sé que tienes ganas de hacer...",
-            image: "",
             footer: "Juntos 👫"
         }
     ],
@@ -42,12 +46,14 @@ const CONFIG = {
     escapeTextsScreen2: ["Sí 😏", "Píllame 😳", "No tan rápido 😈", "Casi lo logras 😅", "Última 😜", "Ok ok… 🙈"]
 };
 
-/* ESTADO */
+/* ESTADO GLOBAL */
 const state = {
     screen2ClickCount: 0,
     canClickScreen2Yes: false,
     textIndex1: 0,
     textIndex2: 0,
+    openIndex: null,       // Índice del regalo actualmente abierto (o null)
+    revealedSet: new Set() // Índices de regalos ya revelados totalmente
 };
 
 /* AUDIO CONTEXT */
@@ -115,11 +121,6 @@ function initPersonalization() {
         btn.style.transform = "scale(0.95)";
         setTimeout(() => btn.style.transform = "scale(1)", 100);
         goToScreen(2);
-    });
-
-    // ESC Key listener for Modal
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeGiftModal();
     });
 }
 
@@ -276,7 +277,6 @@ function initButtons() {
     // PANTALLA 1: Botón SÍ
     const btnYes1 = document.getElementById('btn-y1');
     const handleYes1 = () => {
-        console.log("YES1 CLICK"); // DEBUG
         btnYes1.style.transform = "scale(0.95)";
         setTimeout(() => btnYes1.style.transform = "scale(1)", 100);
         goToScreen(2);
@@ -284,11 +284,6 @@ function initButtons() {
 
     btnYes1.addEventListener('click', handleYes1);
     btnYes1.addEventListener('touchend', (e) => {
-        // No preventDefault here to allow click generation, 
-        // but we can call handler directly to be sure and safer for iOS 
-        // if click is delayed.
-        // However, standard checks suggest just adding click is usually enough if no things block it. 
-        // User asked for touchend.
         handleYes1();
     });
 
@@ -379,62 +374,118 @@ function spawnMiniConfetti(element) {
     }
 }
 
+function updateGiftLocks(clickedIndex) {
+    // Si hay un regalo abierto y NO revelado, bloqueamos los demás
+    const isBlocking = state.openIndex !== null && !state.revealedSet.has(state.openIndex);
+
+    document.querySelectorAll('.gift-box').forEach((box, i) => {
+        // Bloquear si: hay bloqueo activo Y ESTA caja no es la que está abierta (y no está revelada ya)
+        // O si ya está revelada, la dejamos tranquila (o accesible para relectura)
+
+        // Criterio de bloqueo:
+        // Si hay bloqueo activo:
+        // - La caja abierta (openIndex) debe estar normal (activa).
+        // - Todas las demás deben estar disabled.
+
+        if (isBlocking) {
+            if (i === state.openIndex) {
+                box.classList.remove('gift-disabled');
+            } else {
+                box.classList.add('gift-disabled');
+            }
+        } else {
+            // Sin bloqueo, todas desbloqueadas
+            box.classList.remove('gift-disabled');
+        }
+    });
+}
+
 function openGift(element, index) {
-    // Si la caja ya está abierta, también permitimos abrir el modal de nuevo para volver a leer
-    // O si prefieres solo la primera vez, deja el check. 
-    // Usuario dice "cuando haga click en un regalo... quiero que aparezca overlay".
-    // Así que siempre abrimos el modal.
+    // 1. Si ya está abierta, no hacemos nada extra (salvo si queremos re-renderizar, pero no es el caso)
+    if (element.classList.contains('open')) {
+        // Si ya está abierta y revelada, no hacemos nada o dejamos que el usuario interactúe
+        return;
+    }
+
+    // 2. Comprobar bloqueo: Si hay otro regalo abierto y no revelado, abortar
+    if (state.openIndex !== null && !state.revealedSet.has(state.openIndex) && state.openIndex !== index) {
+        return; // Está bloqueado
+    }
+
+    state.openIndex = index;
 
     playPop();
     spawnMiniConfetti(element);
     if (navigator.vibrate) navigator.vibrate(30);
 
-    // Visualmente "abrimos" la caja si no lo estaba
-    if (!element.classList.contains('open')) {
-        element.classList.add('bounce');
-        element.classList.add('open');
-    }
+    element.classList.add('bounce');
+    element.classList.add('open');
 
-    // Abrir Modal
-    openGiftModal(CONFIG.gifts[index]);
+    // Render Preview
+    renderGiftPreview(element, index);
+
+    // Actualizar bloqueos visuales
+    updateGiftLocks(index);
 }
 
-/* MODAL LOGIC */
-function openGiftModal(giftData) {
-    const modal = document.getElementById('gift-modal');
-    if (!modal) return;
+function renderGiftPreview(element, index) {
+    const giftData = CONFIG.gifts[index];
+    const contentDiv = element.querySelector('.gift-content');
+    contentDiv.innerHTML = ''; // Limpiar
 
-    // Populate data
-    document.getElementById('modal-title').innerText = giftData.title;
-    document.getElementById('modal-message').innerText = giftData.message;
-    document.getElementById('modal-footer').innerText = giftData.footer;
+    const container = document.createElement('div');
+    container.className = 'gift-preview';
 
-    const imgContainer = document.getElementById('modal-image-container');
-    const img = document.getElementById('modal-image');
+    const title = document.createElement('div');
+    title.className = 'gift-preview-title';
+    title.innerText = giftData.title;
 
-    if (giftData.image) {
-        img.src = giftData.image;
-        imgContainer.classList.remove('hidden');
-    } else {
-        imgContainer.classList.add('hidden');
-    }
+    const btn = document.createElement('button');
+    btn.className = 'btn-reveal';
+    btn.innerText = giftData.buttonLabel || "Ver";
+    btn.onclick = (e) => {
+        e.stopPropagation(); // Evitar triggers raros
+        revealGift(element, index);
+    };
 
-    // Show modal
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Block scroll
+    container.appendChild(title);
+    container.appendChild(btn);
+    contentDiv.appendChild(container);
 }
 
-function closeGiftModal(event) {
-    // If triggered by event (click outside), check target
-    if (event && !event.target.classList.contains('modal-overlay')) {
-        return;
+function revealGift(element, index) {
+    // Marcar como revelado
+    state.revealedSet.add(index);
+
+    // Desbloquear (ya no hay openIndex pendiente de revelar, aunque openIndex siga siendo este)
+    // Dejamos openIndex apuntando aquí, pero como revealedSet lo tiene, updateGiftLocks quitará el disabled global
+    updateGiftLocks(index);
+
+    const giftData = CONFIG.gifts[index];
+    const contentDiv = element.querySelector('.gift-content');
+    contentDiv.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'gift-reveal';
+
+    const title = document.createElement('div');
+    title.className = 'gift-reveal-title';
+    title.innerText = giftData.title;
+
+    const msg = document.createElement('div');
+    msg.className = 'gift-reveal-message';
+    msg.innerText = giftData.message;
+
+    if (giftData.footer) {
+        const foot = document.createElement('div');
+        foot.className = 'gift-reveal-footer';
+        foot.innerText = giftData.footer;
+        msg.appendChild(foot);
     }
 
-    const modal = document.getElementById('gift-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = ''; // Restore scroll
-    }
+    container.appendChild(title);
+    container.appendChild(msg);
+    contentDiv.appendChild(container);
 }
 
 /* CONFETI BACKGROUND (Screen 3) */
