@@ -1,41 +1,23 @@
 /* CONFIGURACIÓN */
 const CONFIG = {
-    version: '1.5',
+    version: '1.6',
     partnerName: "", // Poner nombre aquí, e.g. "Laura"
     sinceDate: "", // Texto opcional, e.g. "Desde 2023... 💘"
     photoUrl: "", // Ruta opcional, e.g. "./assets/us.jpg"
     soundEnabled: true,
     screen2Attempts: 8,
+    // Regalos normales (indices 1, 2, 3)
     gifts: [
-        {
-            type: "text",
-            title: "Vale Especial 📝",
-            buttonLabel: "Ver vale",
-            message: "Vale por un texto bonito cuando más lo necesites. Solo tienes que pedírmelo y me pondré inspirad@ para escribirte lo que sientes.",
-            footer: "Con amor, yo 💌"
-        },
-        {
-            type: "text",
-            title: "Relax Time 🧖‍♀️",
-            buttonLabel: "Ver sorpresa",
-            message: "Vale por un día de Spa, masajes y mimos. Prepárate para relajarte completamente.",
-            footer: "Para ti ❤️"
-        },
-        {
-            type: "text",
-            title: "Besos 💋",
-            buttonLabel: "Canjear",
-            message: "Vale por una sesión de besos infinitos (sin caducidad). Canjeable en cualquier momento y lugar.",
-            footer: "Te quiero 💖"
-        },
-        {
-            type: "text",
-            title: "Sorpresa 🤫",
-            buttonLabel: "Descubrir",
-            message: "Vale por un Plan Secreto que te encantará. Es algo que sé que tienes ganas de hacer...",
-            footer: "Juntos 👫"
-        }
+        "Vale por un día de Spa, masajes y mimos. 🧖‍♀️",
+        "Vale por una sesión de besos infinitos. 💋",
+        "Vale por un Plan Secreto que te encantará. 🤫"
     ],
+    // Regalo especial (index 0)
+    letterGift: {
+        title: "Tu cartita 💌",
+        buttonLabel: "Ver texto",
+        message: "Aquí pondré tu texto especial... ¡Escríbelo en CONFIG! 💖"
+    },
     messages: {
         screen2No: "No acepto esa respuesta 😌",
         screen2Funny: "Vale, vale... 😌",
@@ -52,8 +34,12 @@ const state = {
     canClickScreen2Yes: false,
     textIndex1: 0,
     textIndex2: 0,
-    openIndex: null,       // Índice del regalo actualmente abierto (o null)
-    revealedSet: new Set() // Índices de regalos ya revelados totalmente
+};
+
+// Nuevo estado de flujo de regalos
+const giftFlow = {
+    openIndex: null, // Si es 0, estamos en el regalo especial
+    textRevealed: false
 };
 
 /* AUDIO CONTEXT */
@@ -350,8 +336,7 @@ function goToScreen(screenNum) {
     if (screenNum === 3) startConfetti();
 }
 
-/* REGALOS & MODAL */
-/* FUNCIONES DE REGALOS */
+/* GIFTS LOGIC - MIXED BEHAVIOR */
 function spawnMiniConfetti(element) {
     const colors = ['#ff4d6d', '#ff8fa3', '#fff', '#ffc107', '#ff0055'];
     const particleCount = 20;
@@ -374,45 +359,18 @@ function spawnMiniConfetti(element) {
     }
 }
 
-function updateGiftLocks(clickedIndex) {
-    // Si hay un regalo abierto y NO revelado, bloqueamos los demás
-    const isBlocking = state.openIndex !== null && !state.revealedSet.has(state.openIndex);
-
-    document.querySelectorAll('.gift-box').forEach((box, i) => {
-        // Bloquear si: hay bloqueo activo Y ESTA caja no es la que está abierta (y no está revelada ya)
-        // O si ya está revelada, la dejamos tranquila (o accesible para relectura)
-
-        // Criterio de bloqueo:
-        // Si hay bloqueo activo:
-        // - La caja abierta (openIndex) debe estar normal (activa).
-        // - Todas las demás deben estar disabled.
-
-        if (isBlocking) {
-            if (i === state.openIndex) {
-                box.classList.remove('gift-disabled');
-            } else {
-                box.classList.add('gift-disabled');
-            }
-        } else {
-            // Sin bloqueo, todas desbloqueadas
-            box.classList.remove('gift-disabled');
-        }
-    });
-}
-
 function openGift(element, index) {
     // 1. Si ya está abierta, no hacemos nada extra (salvo si queremos re-renderizar, pero no es el caso)
     if (element.classList.contains('open')) {
-        // Si ya está abierta y revelada, no hacemos nada o dejamos que el usuario interactúe
         return;
     }
 
-    // 2. Comprobar bloqueo: Si hay otro regalo abierto y no revelado, abortar
-    if (state.openIndex !== null && !state.revealedSet.has(state.openIndex) && state.openIndex !== index) {
-        return; // Está bloqueado
+    // 2. Comprobar bloqueo: Si el regalo especial (0) está abierto y NO revelado, BLOQUEAMOS los demás
+    if (giftFlow.openIndex === 0 && !giftFlow.textRevealed && index !== 0) {
+        return; // Bloqueado
     }
 
-    state.openIndex = index;
+    giftFlow.openIndex = index; // Actualizar el índice del regalo abierto
 
     playPop();
     spawnMiniConfetti(element);
@@ -421,47 +379,56 @@ function openGift(element, index) {
     element.classList.add('bounce');
     element.classList.add('open');
 
-    // Render Preview
-    renderGiftPreview(element, index);
-
-    // Actualizar bloqueos visuales
-    updateGiftLocks(index);
-}
-
-function renderGiftPreview(element, index) {
-    const giftData = CONFIG.gifts[index];
     const contentDiv = element.querySelector('.gift-content');
     contentDiv.innerHTML = ''; // Limpiar
 
-    const container = document.createElement('div');
-    container.className = 'gift-preview';
+    if (index === 0) {
+        // REGALO ESPECIAL (Preview + Botón)
+        giftFlow.textRevealed = false; // Resetear estado de revelado para el regalo especial
 
-    const title = document.createElement('div');
-    title.className = 'gift-preview-title';
-    title.innerText = giftData.title;
+        // Render Preview
+        const container = document.createElement('div');
+        container.className = 'gift-preview';
 
-    const btn = document.createElement('button');
-    btn.className = 'btn-reveal';
-    btn.innerText = giftData.buttonLabel || "Ver";
-    btn.onclick = (e) => {
-        e.stopPropagation(); // Evitar triggers raros
-        revealGift(element, index);
-    };
+        const title = document.createElement('div');
+        title.className = 'gift-preview-title';
+        title.innerText = CONFIG.letterGift.title;
 
-    container.appendChild(title);
-    container.appendChild(btn);
-    contentDiv.appendChild(container);
+        const btn = document.createElement('button');
+        btn.className = 'btn-reveal';
+        btn.innerText = CONFIG.letterGift.buttonLabel;
+        btn.onclick = (e) => {
+            e.stopPropagation(); // Evitar triggers raros
+            revealLetter(element);
+        };
+
+        container.appendChild(title);
+        container.appendChild(btn);
+        contentDiv.appendChild(container);
+
+        // Bloquear los demás visualmente
+        updateGiftLocks();
+
+    } else {
+        // REGALOS NORMALES (1, 2, 3) -> Index en array es index-1
+        const giftText = CONFIG.gifts[index - 1]; // CONFIG.gifts solo tiene 3 strings ahora
+
+        const container = document.createElement('div');
+        container.className = 'gift-note';
+
+        const message = document.createElement('div');
+        message.className = 'gift-note-message';
+        message.innerText = giftText;
+
+        container.appendChild(message);
+        contentDiv.appendChild(container);
+    }
 }
 
-function revealGift(element, index) {
-    // Marcar como revelado
-    state.revealedSet.add(index);
+function revealLetter(element) {
+    giftFlow.textRevealed = true;
+    updateGiftLocks(); // Desbloquear los otros regalos
 
-    // Desbloquear (ya no hay openIndex pendiente de revelar, aunque openIndex siga siendo este)
-    // Dejamos openIndex apuntando aquí, pero como revealedSet lo tiene, updateGiftLocks quitará el disabled global
-    updateGiftLocks(index);
-
-    const giftData = CONFIG.gifts[index];
     const contentDiv = element.querySelector('.gift-content');
     contentDiv.innerHTML = '';
 
@@ -470,22 +437,28 @@ function revealGift(element, index) {
 
     const title = document.createElement('div');
     title.className = 'gift-reveal-title';
-    title.innerText = giftData.title;
+    title.innerText = CONFIG.letterGift.title;
 
     const msg = document.createElement('div');
     msg.className = 'gift-reveal-message';
-    msg.innerText = giftData.message;
-
-    if (giftData.footer) {
-        const foot = document.createElement('div');
-        foot.className = 'gift-reveal-footer';
-        foot.innerText = giftData.footer;
-        msg.appendChild(foot);
-    }
+    msg.innerText = CONFIG.letterGift.message;
 
     container.appendChild(title);
     container.appendChild(msg);
     contentDiv.appendChild(container);
+}
+
+function updateGiftLocks() {
+    const isLocked = (giftFlow.openIndex === 0 && !giftFlow.textRevealed);
+
+    document.querySelectorAll('.gift-box').forEach((box, i) => {
+        if (i === 0) {
+            box.classList.remove('gift-disabled'); // El regalo especial siempre es accesible
+        } else {
+            if (isLocked) box.classList.add('gift-disabled');
+            else box.classList.remove('gift-disabled');
+        }
+    });
 }
 
 /* CONFETI BACKGROUND (Screen 3) */

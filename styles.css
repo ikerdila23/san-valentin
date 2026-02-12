@@ -646,170 +646,149 @@ body {
     }
 }
 
-/* Gift Modal (Overlay) */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(255, 77, 109, 0.2);
-    backdrop-filter: blur(8px);
-    z-index: 3000;
+/* Screen 3 container */
+#screen-3 .card,
+#screen-3 .container {
+    width: 100%;
+    max-width: 900px;
+}
+
+/* Grid always stable 2x2 */
+.gift-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.gift-box {
+    height: clamp(130px, 18vh, 190px);
+    border-radius: 15px;
+    background: white;
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: fadeInModal 0.3s ease-out;
-}
-
-@keyframes fadeInModal {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-.modal-envelope {
-    background: #fff;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    border-radius: 12px;
-    padding: 2.5rem 1.5rem;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(255, 77, 109, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    animation: popUpEnvelope 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    overflow: hidden;
-    border: 2px solid #fff0f3;
-}
-
-@keyframes popUpEnvelope {
-    from {
-        transform: scale(0.8) translateY(20px);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-}
-
-.close-modal-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 2rem;
-    line-height: 1;
-    color: #ff8fa3;
     cursor: pointer;
-    transition: color 0.2s;
-    z-index: 10;
+    position: relative;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    perspective: 1000px;
+    overflow: hidden;
+    border: 3px solid #ffebeb;
 }
 
-.close-modal-btn:hover {
-    color: #ff4d6d;
+/* Mobile: still 2x2 so all 4 are visible */
+@media (max-width: 768px) {
+    .card {
+        padding: 22px 16px;
+    }
+
+    .gift-grid {
+        gap: 12px;
+    }
+
+    .gift-box {
+        height: 150px;
+    }
 }
 
-/* Modal Content w/ Scroll */
-.modal-scroll-content {
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    padding-right: 5px;
-    /* space for scrollbar */
-}
-
-/* Custom Scrollbar for Modal */
-.modal-scroll-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.modal-scroll-content::-webkit-scrollbar-thumb {
-    background: #ffcbd1;
-    border-radius: 3px;
-}
-
-.modal-header {
-    margin-bottom: 1.5rem;
-    border-bottom: 2px dashed #ffebeb;
-    padding-bottom: 1rem;
-    width: 100%;
-}
-
-.modal-title {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    color: #ff0055;
-    margin: 0;
-}
-
-.modal-body {
+/* Preview Mode */
+.gift-preview {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
-}
-
-.modal-image-container {
-    width: 100%;
-    max-width: 300px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 3px solid #fff;
-    transform: rotate(-2deg);
-    transition: transform 0.3s;
-}
-
-.modal-image-container:hover {
-    transform: rotate(0deg) scale(1.02);
-}
-
-.modal-image {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.modal-message {
-    font-size: 1.15rem;
-    line-height: 1.6;
-    color: #555;
-    white-space: pre-wrap;
-    /* keep breaks */
-    text-align: left;
-    /* better reading */
+    justify-content: center;
+    gap: 12px;
+    animation: fadeIn 0.4s ease;
     width: 100%;
 }
 
-.modal-footer {
-    width: 100%;
-    text-align: right;
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    color: #ff4d6d;
-    margin-top: 1rem;
+.gift-preview-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ff0055;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Mobile Adjustments */
-@media (max-width: 768px) {
-    .modal-envelope {
-        padding: 1.5rem;
-        width: 95%;
+.btn-reveal {
+    background: #ff4d6d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 77, 109, 0.3);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.btn-reveal:hover {
+    transform: scale(1.05);
+    background: #e03e5d;
+}
+
+/* Revealed Content */
+.gift-reveal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: slideUpReveal 0.5s ease-out;
+    width: 100%;
+}
+
+.gift-reveal-title {
+    font-size: 0.8rem;
+    color: #ff8fa3;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.gift-reveal-message {
+    font-size: 1.05rem;
+    color: #d63384;
+    line-height: 1.35;
+    font-weight: 600;
+}
+
+.gift-reveal-footer {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #ff8fa3;
+}
+
+@keyframes slideUpReveal {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
-    .modal-title {
-        font-size: 1.6rem;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 
-    .modal-message {
-        font-size: 1rem;
-    }
+/* Locked/Disabled State */
+.gift-disabled {
+    opacity: 0.5;
+    filter: saturate(0.85);
+    pointer-events: none;
+    cursor: not-allowed;
+    transition: all 0.3s;
+}
+
+/* MANTENER Confetti Canvas */
+#confetti-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 15;
 }
