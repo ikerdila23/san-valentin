@@ -287,6 +287,7 @@ function openGift(box, index) {
    OVERLAY CARTA (sobre que se abre)
 ========================= */
 function openLetterOverlay() {
+    console.log("revealLetter OK"); // LOG DE VERIFICACIÓN
     const overlay = document.getElementById("letter-overlay");
     const envelope = document.getElementById("envelope");
     const titleEl = document.getElementById("letter-title");
