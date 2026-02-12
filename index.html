@@ -1,130 +1,118 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>San Valentín 💘</title>
-
-    <!-- Fuentes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Pacifico&display=swap"
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Quieres ser mi San Valentín?</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Pacifico&display=swap"
         rel="stylesheet">
-
-    <!-- IMPORTANTE: rutas relativas para GitHub Pages -->
-    <link rel="stylesheet" href="./styles.css" />
-    <script src="./app.js" defer></script>
 </head>
 
 <body>
-    <!-- Fondo corazones -->
-    <div class="background-hearts" id="bg-hearts" aria-hidden="true"></div>
+    <div class="background-hearts" id="bg-hearts"></div>
+    <div id="escape-layer"></div>
 
-    <!-- Capa para el botón escapista (para moverlo por toda la pantalla) -->
-    <div id="escape-layer" aria-hidden="true"></div>
+    <!-- Sound Toggle -->
+    <button id="sound-toggle" class="sound-toggle" aria-label="Activar/Desactivar sonido">🔊</button>
 
-    <!-- Pantalla 1 -->
-    <section class="screen active" id="screen-1">
+    <!-- PANTALLA 1 -->
+    <section id="screen-1" class="screen active">
         <div class="card">
-            <h1 class="title">¿Quieres ser mi San Valentín? 💘</h1>
-            <p class="subtitle">Piénsalo bien… 😏</p>
+            <!-- Foto opcional -->
+            <div id="partner-photo-container" class="hidden">
+                <img id="partner-photo" src="" alt="Nosotros" class="partner-photo">
+            </div>
+
+            <h1 class="title">¿Quieres ser mi San Valentín<span id="partner-name-display"></span>? 💌</h1>
+            <p class="subtitle" id="since-date-display">Prometo que es importante 😳</p>
 
             <div class="buttons-container">
-                <button class="btn btn-yes" id="btn-y1" type="button">Sí 💖</button>
-                <button class="btn btn-no btn-escape" id="btn-n1" type="button">No 🙄</button>
+                <div class="btn-msg-container" id="msg-container-1"></div>
+                <!-- Botón Yes modificado para el toast -->
+                <button class="btn btn-yes" id="btn-y1">Sí 💖</button>
+                <button class="btn btn-no" id="btn-n1">No 😅</button>
             </div>
-
-            <div class="tiny-message" id="tiny-msg-1" aria-live="polite"></div>
         </div>
     </section>
 
-    <!-- Pantalla 2 -->
-    <section class="screen hidden" id="screen-2">
+    <!-- PANTALLA 2 -->
+    <section id="screen-2" class="screen hidden">
         <div class="card">
-            <h2 class="title">Pues querrás un regalo, ¿no? 🎁</h2>
-            <p class="subtitle">A ver si te atreves… 😌</p>
-
-            <div class="buttons-container">
-                <button class="btn btn-yes btn-escape" id="btn-y2" type="button">Sí 😏</button>
-                <button class="btn btn-no" id="btn-n2" type="button">No</button>
-            </div>
-
-            <div class="tiny-message" id="tiny-msg-2" aria-live="polite"></div>
-        </div>
-    </section>
-
-    <!-- Pantalla 3 -->
-    <section class="screen hidden" id="screen-3">
-        <div class="card card-wide">
-            <h2 class="title">Aquí tienes tus regalos 🎀</h2>
-            <p class="subtitle">Abre uno… pero con calma 😇</p>
-
-            <div class="gift-grid" id="gift-grid">
-                <!-- Gift 0 (Carta) -->
-                <div class="gift-box" data-index="0" role="button" tabindex="0" aria-label="Regalo 1">
-                    <div class="gift-lid" aria-hidden="true"></div>
-                    <div class="gift-body" aria-hidden="true">?</div>
-                    <div class="gift-content" aria-live="polite"></div>
-                </div>
-
-                <!-- Gift 1 -->
-                <div class="gift-box" data-index="1" role="button" tabindex="0" aria-label="Regalo 2">
-                    <div class="gift-lid" aria-hidden="true"></div>
-                    <div class="gift-body" aria-hidden="true">?</div>
-                    <div class="gift-content" aria-live="polite"></div>
-                </div>
-
-                <!-- Gift 2 -->
-                <div class="gift-box" data-index="2" role="button" tabindex="0" aria-label="Regalo 3">
-                    <div class="gift-lid" aria-hidden="true"></div>
-                    <div class="gift-body" aria-hidden="true">?</div>
-                    <div class="gift-content" aria-live="polite"></div>
-                </div>
-
-                <!-- Gift 3 -->
-                <div class="gift-box" data-index="3" role="button" tabindex="0" aria-label="Regalo 4">
-                    <div class="gift-lid" aria-hidden="true"></div>
-                    <div class="gift-body" aria-hidden="true">?</div>
-                    <div class="gift-content" aria-live="polite"></div>
-                </div>
+            <h1 class="title">Pues querrás un regalo, ¿no? 🎁</h1>
+            <div class="buttons-container reverse">
+                <div class="btn-msg-container" id="msg-container-2"></div>
+                <button class="btn btn-yes-escape" id="btn-y2">Sí 😏</button>
+                <button class="btn btn-no-static" id="btn-n2">No 🤭</button>
             </div>
         </div>
     </section>
 
-    <!-- OVERLAY CARTA (sobre que se abre + carta sale) -->
-    <div id="letter-overlay" class="letter-overlay hidden" aria-hidden="true">
-        <div class="letter-backdrop" data-action="close-letter"></div>
-
-        <div class="letter-stage" role="dialog" aria-modal="true" aria-label="Carta">
-            <button class="letter-x" type="button" data-action="close-letter" aria-label="Cerrar">✕</button>
-
-            <div class="envelope-wrap">
-                <div class="envelope" id="envelope">
-                    <div class="env-back"></div>
-                    <div class="env-front"></div>
-                    <div class="env-flap"></div>
-                    <div class="env-heart" aria-hidden="true">❤</div>
-
-                    <div class="letter-sheet" id="letter-sheet">
-                        <div class="sheet-top">
-                            <div class="sheet-stamp" aria-hidden="true">💌</div>
-                            <h3 id="letter-title" class="sheet-title"></h3>
-                        </div>
-
-                        <div id="letter-body" class="sheet-body"></div>
-
-                        <img id="letter-img" class="sheet-img" alt="Nuestra foto" />
-
-                        <div class="sheet-sign">— Iker 💌</div>
-
-                        <button class="btn btn-yes sheet-close" type="button" data-action="close-letter">Cerrar</button>
+    <!-- PANTALLA 3 -->
+    <section id="screen-3" class="screen hidden">
+        <canvas id="confetti-canvas"></canvas>
+        <div class="container">
+            <h1 class="title">Aquí tienes tus regalos 💝</h1>
+            <div class="gift-grid">
+                <div class="gift-box" onclick="openGift(this, 0)">
+                    <div class="gift-lid">
+                        <span class="gift-bow"></span>
                     </div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
+                </div>
+                <div class="gift-box" onclick="openGift(this, 1)">
+                    <div class="gift-lid">
+                        <span class="gift-bow"></span>
+                    </div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
+                </div>
+                <div class="gift-box" onclick="openGift(this, 2)">
+                    <div class="gift-lid">
+                        <span class="gift-bow"></span>
+                    </div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
+                </div>
+                <div class="gift-box" onclick="openGift(this, 3)">
+                    <div class="gift-lid">
+                        <span class="gift-bow"></span>
+                    </div>
+                    <div class="gift-body">
+                        <span class="gift-text">?</span>
+                    </div>
+                    <div class="gift-content"></div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Letter Overlay -->
+    <!-- Letter Overlay -->
+    <!-- Letter Overlay -->
+    <div id="letter-overlay" class="letter-overlay hidden">
+        <div class="letter-backdrop" data-close-letter="1"></div>
+        <div class="letter-card">
+            <button class="letter-x" data-close-letter="1">✕</button>
+            <h2 id="letter-title"></h2>
+            <div id="letter-body"></div>
+            <img id="letter-img" alt="Nuestra foto">
+            <button class="btn btn-yes" data-close-letter="1">Cerrar</button>
         </div>
     </div>
 
+    <script src="./app.js" defer></script>
 </body>
 
 </html>
