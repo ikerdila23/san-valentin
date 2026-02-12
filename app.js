@@ -426,6 +426,7 @@ function openGift(element, index) {
 }
 
 function revealLetter(element) {
+    console.log("revealLetter OK");
     giftFlow.textRevealed = true;
     updateGiftLocks(); // Desbloquear los otros regalos
 
