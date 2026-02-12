@@ -792,3 +792,258 @@ body {
     pointer-events: none;
     z-index: 15;
 }
+
+/* LETTER OVERLAY & ANIMATION */
+.letter-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.letter-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.letter-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 77, 109, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 1;
+}
+
+.letter-stage {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1500px;
+    padding: 20px;
+}
+
+.letter-x {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    color: #ff4d6d;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+}
+
+/* ENVELOPE */
+.envelope-wrap {
+    width: 320px;
+    height: 220px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.envelope {
+    width: 100%;
+    height: 100%;
+    background: #ff4d6d;
+    position: relative;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform-style: preserve-3d;
+}
+
+.env-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #e03e5d;
+    border-radius: 0 0 10px 10px;
+    z-index: 1;
+}
+
+.env-front {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 160px solid transparent;
+    border-right: 160px solid transparent;
+    border-bottom: 120px solid #ff8fa3;
+    /* Front pocket */
+    z-index: 3;
+    border-radius: 0 0 10px 10px;
+    pointer-events: none;
+}
+
+.env-flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 160px solid transparent;
+    border-right: 160px solid transparent;
+    border-top: 130px solid #ff4d6d;
+    /* Flap color */
+    transform-origin: top;
+    z-index: 4;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.env-heart {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    color: #ffd700;
+    z-index: 5;
+    transition: opacity 0.3s;
+}
+
+/* Open State for Envelope */
+.envelope.open .env-flap {
+    transform: rotateX(180deg);
+    z-index: 0;
+    /* Move behind when open */
+}
+
+.envelope.open .env-heart {
+    opacity: 0;
+}
+
+/* LETTER SHEET */
+.letter-sheet {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0) scale(0.9);
+    width: 90%;
+    max-width: 500px;
+    /* Wider than envelope when out */
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+    /* Inside pocket (z=3 is front) but we want it to come OUT over front? 
+                   Actually standard trick used: it starts at z-index 2 (behind front), 
+                   slides up and z-index changes or we just make it tall enough. 
+                   Let's use a nice animation where it slides UP and scales up. 
+                   We will set z-index higher once it animates or just high enough.
+                */
+    z-index: 2;
+    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+
+    /* Scroll internal */
+    max-height: 70vh;
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+}
+
+/* When envelope opens, sheet slides UP */
+.envelope.open .letter-sheet {
+    transform: translateX(-50%) translateY(-20%) scale(1);
+    /* Wait, we want it to cover screen mostly? 
+       User wants "overlay fullscreen... carta sale de dentro".
+       Let's make it slide up to be fully visible centered on screen.
+    */
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 600px;
+    height: auto;
+    max-height: 85vh;
+    opacity: 1;
+    z-index: 10;
+    transition-delay: 0.4s;
+    /* Wait for flap */
+}
+
+.sheet-title {
+    font-family: var(--font-display);
+    color: #ff0055;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.sheet-body {
+    font-family: var(--font-main);
+    font-size: clamp(1rem, 2.6vw, 1.12rem);
+    line-height: 1.6;
+    color: #444;
+    white-space: pre-wrap;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.sheet-img {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 16px;
+    margin: 1rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: none;
+    /* JS will show if src exists */
+}
+
+.sheet-sign {
+    width: 100%;
+    text-align: right;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: #ff4d6d;
+    margin-top: 1rem;
+}
+
+.sheet-close {
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 200px;
+}
+
+/* Custom Scrollbar for Letter */
+.letter-sheet::-webkit-scrollbar {
+    width: 6px;
+}
+
+.letter-sheet::-webkit-scrollbar-thumb {
+    background: #ffcbd1;
+    border-radius: 3px;
+}
+
+@media (max-width: 768px) {
+    .envelope-wrap {
+        transform: scale(0.9);
+    }
+
+    .letter-sheet {
+        padding: 1.5rem;
+        width: 94vw;
+    }
+}

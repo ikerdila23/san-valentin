@@ -98,6 +98,33 @@
     <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
 
+    <!-- Letter Overlay -->
+    <div id="letter-overlay" class="letter-overlay hidden" aria-hidden="true">
+        <div class="letter-backdrop" onclick="closeLetterOverlay()"></div>
+
+        <div class="letter-stage" role="dialog" aria-modal="true" aria-label="Carta">
+            <button id="letter-x" class="letter-x" aria-label="Cerrar" onclick="closeLetterOverlay()">✕</button>
+
+            <div class="envelope-wrap" aria-hidden="true">
+                <div class="envelope" id="envelope">
+                    <div class="env-back"></div>
+                    <div class="env-front"></div>
+                    <div class="env-flap"></div>
+                    <div class="env-heart">❤</div>
+
+                    <div class="letter-sheet" id="letter-sheet">
+                        <h2 id="letter-title" class="sheet-title"></h2>
+                        <div id="letter-body" class="sheet-body"></div>
+                        <img id="letter-img" class="sheet-img" alt="Nuestra foto" />
+                        <div class="sheet-sign">— Iker 💌</div>
+                        <button id="letter-close" class="btn btn-yes sheet-close"
+                            onclick="closeLetterOverlay()">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="./app.js?v=CONFIG_VERSION"></script>
 </body>
 
