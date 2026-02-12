@@ -14,9 +14,28 @@ const CONFIG = {
     ],
     // Regalo especial (index 0)
     letterGift: {
-        title: "Tu cartita 💌",
+        title: "Para ti, Annetxus 💌",
         buttonLabel: "Ver texto",
-        message: "Aquí pondré tu texto especial... ¡Escríbelo en CONFIG! 💖"
+        image: "./assets/nosotros.jpg",
+        message: `Bueno annetxus si no calculo mal estarás leyendo este mensaje conmigo en Santander o Oviedo.
+
+Lo primero que te quiero decir es que eres lo mejor que me ha pasado en la vida y que te quiero un montonazo.
+
+Te conocí en una época de mi vida que no estaba muy bien y desde que estoy contigo todo ha ido a mejor.
+
+No creo en las casualidades pero desde que te conozco hemos ganado la copa, estoy mucho más feliz…
+
+Aunque tengamos nuestros rifirafes y nuestros enfados ambos sabemos que nos queremos un montonazo y que estamos el uno para el otro y ojalá así sea siempre Annetxus.
+
+Y no sabes lo bien que me lo paso contigo de viaje visitando sitios y riéndonos juntos.
+
+Y probablemente cuando estés leyendo esto me lo estaré pasando dpm cntigo, habiendo cenado en la tasca y con nuestro cachopin😋😋😋
+
+Por eso solo quiero decirte gracias por estar a mi lado cuando te necesito y para pasárnoslo bien juntos.
+
+Te quiero un montón miniña🩵🐥🩵🐥🩵
+
+Te amo Annetxus🩵🩵`
     },
     messages: {
         screen2No: "No acepto esa respuesta 😌",
@@ -397,10 +416,9 @@ function openGift(element, index) {
         const btn = document.createElement('button');
         btn.className = 'btn-reveal';
         btn.innerText = CONFIG.letterGift.buttonLabel;
-        btn.onclick = (e) => {
-            e.stopPropagation(); // Evitar triggers raros
-            revealLetter(element);
-        };
+        // La delegación se encarga del click
+        btn.setAttribute('data-action', 'open-letter');
+        btn.type = 'button';
 
         container.appendChild(title);
         container.appendChild(btn);
@@ -425,40 +443,108 @@ function openGift(element, index) {
     }
 }
 
-function revealLetter(element) {
-    console.log("revealLetter OK");
+/* LETTER OVERLAY ANIMATION */
+function openLetterOverlay() {
+    const overlay = document.getElementById('letter-overlay');
+    const envelope = document.getElementById('envelope');
+    const titleEl = document.getElementById('letter-title');
+    const bodyEl = document.getElementById('letter-body');
+    const imgEl = document.getElementById('letter-img');
+
+    // 1. Rellenar contenido
+    titleEl.textContent = CONFIG.letterGift.title;
+    bodyEl.textContent = CONFIG.letterGift.message;
+
+    if (CONFIG.letterGift.image) {
+        imgEl.src = CONFIG.letterGift.image;
+        imgEl.style.display = 'block';
+    } else {
+        imgEl.style.display = 'none';
+    }
+
+    // 2. Mostrar overlay
+    overlay.classList.remove('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden'; // Bloquear scroll fondo
+
+    // 3. Resetear animación sobre
+    envelope.classList.remove('open');
+    void envelope.offsetWidth; // Force reflow
+
+    // 4. Iniciar animación (abrir sobre)
+    setTimeout(() => {
+        envelope.classList.add('open');
+    }, 100);
+
+    // 5. Marcar como revelado (lógica de juego)
     giftFlow.textRevealed = true;
-    updateGiftLocks(); // Desbloquear los otros regalos
+    giftFlow.overlayOpen = true; // Bloqueo temporal
+    // updateGiftLocks() se llama al cerrar para desbloquear visualmente, 
+    // pero ya marcamos el flag para que sea posible.
+}
 
-    const contentDiv = element.querySelector('.gift-content');
-    contentDiv.innerHTML = '';
+function closeLetterOverlay() {
+    const overlay = document.getElementById('letter-overlay');
 
-    const container = document.createElement('div');
-    container.className = 'gift-reveal';
+    // 1. Ocultar
+    overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = ''; // Restaurar scroll
 
-    const title = document.createElement('div');
-    title.className = 'gift-reveal-title';
-    title.innerText = CONFIG.letterGift.title;
+    // 2. Estado
+    giftFlow.overlayOpen = false;
 
-    const msg = document.createElement('div');
-    msg.className = 'gift-reveal-message';
-    msg.innerText = CONFIG.letterGift.message;
-
-    container.appendChild(title);
-    container.appendChild(msg);
-    contentDiv.appendChild(container);
+    // 3. Desbloquear otros regalos
+    updateGiftLocks();
 }
 
 function updateGiftLocks() {
+    // Si la carta (0) está abierta pero NO revelada, bloqueamos.
+    // Si overlayOpen es true, también podríamos bloquear clicks en otros, pero el overlay tapa todo con z-index.
     const isLocked = (giftFlow.openIndex === 0 && !giftFlow.textRevealed);
 
     document.querySelectorAll('.gift-box').forEach((box, i) => {
-        if (i === 0) {
-            box.classList.remove('gift-disabled'); // El regalo especial siempre es accesible
+        const idx = Number(box.dataset.index || i); // Fallback si no hay dataset (paranoia)
+
+        if (idx === 0) {
+            box.classList.remove('gift-disabled');
         } else {
             if (isLocked) box.classList.add('gift-disabled');
             else box.classList.remove('gift-disabled');
         }
+    });
+}
+
+function revealLetter(element) {
+    // Legacy support if needed, but we redirect to overlay
+    openLetterOverlay();
+}
+
+/* EVENT DELEGATION */
+function initGifts() {
+    // Delegación para abrir/cerrar carta
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+
+        // ABRIR (Botón "Ver texto")
+        if (target.closest('[data-action="open-letter"]') || target.classList.contains('btn-reveal')) {
+            e.preventDefault();
+            e.stopPropagation();
+            openLetterOverlay();
+            return;
+        }
+
+        // CERRAR (Botón X, Cerrar, Backdrop)
+        if (target.closest('[data-action="close-letter"]')) {
+            e.preventDefault();
+            closeLetterOverlay();
+            return;
+        }
+    });
+
+    // Tecla Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLetterOverlay();
     });
 }
 
