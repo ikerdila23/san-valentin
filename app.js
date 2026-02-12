@@ -14,9 +14,8 @@ const CONFIG = {
     ],
     // Regalo especial (index 0)
     letterGift: {
-        title: "Para ti, Annetxus 💌",
+        title: "Tu cartita 💌",
         buttonLabel: "Ver texto",
-        image: "./assets/nosotros.jpg",
         message: `Bueno annetxus si no calculo mal estarás leyendo este mensaje conmigo en Santander o Oviedo.
 
 Lo primero que te quiero decir es que eres lo mejor que me ha pasado en la vida y que te quiero un montonazo.
@@ -416,9 +415,8 @@ function openGift(element, index) {
         const btn = document.createElement('button');
         btn.className = 'btn-reveal';
         btn.innerText = CONFIG.letterGift.buttonLabel;
-        // La delegación se encarga del click
+        btn.onclick = null; // No inline events
         btn.setAttribute('data-action', 'open-letter');
-        btn.type = 'button';
 
         container.appendChild(title);
         container.appendChild(btn);
@@ -443,108 +441,67 @@ function openGift(element, index) {
     }
 }
 
-/* LETTER OVERLAY ANIMATION */
 function openLetterOverlay() {
     const overlay = document.getElementById('letter-overlay');
-    const envelope = document.getElementById('envelope');
-    const titleEl = document.getElementById('letter-title');
-    const bodyEl = document.getElementById('letter-body');
-    const imgEl = document.getElementById('letter-img');
+    const title = document.getElementById('letter-title');
+    const body = document.getElementById('letter-body');
+    const img = document.getElementById('letter-img');
+    const card = overlay.querySelector('.letter-card');
 
-    // 1. Rellenar contenido
-    titleEl.textContent = CONFIG.letterGift.title;
-    bodyEl.textContent = CONFIG.letterGift.message;
+    // Content
+    title.innerText = CONFIG.letterGift.title;
+    body.innerText = CONFIG.letterGift.message;
+    img.src = "./assets/nosotros.jpg";
+    img.onerror = () => { img.style.display = 'none'; };
 
-    if (CONFIG.letterGift.image) {
-        imgEl.src = CONFIG.letterGift.image;
-        imgEl.style.display = 'block';
-    } else {
-        imgEl.style.display = 'none';
-    }
-
-    // 2. Mostrar overlay
+    // Logic
+    document.body.style.overflow = 'hidden';
     overlay.classList.remove('hidden');
-    overlay.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden'; // Bloquear scroll fondo
+    // Force reflow
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
 
-    // 3. Resetear animación sobre
-    envelope.classList.remove('open');
-    void envelope.offsetWidth; // Force reflow
-
-    // 4. Iniciar animación (abrir sobre)
-    setTimeout(() => {
-        envelope.classList.add('open');
-    }, 100);
-
-    // 5. Marcar como revelado (lógica de juego)
+    // Mark as revealed and unlock others
     giftFlow.textRevealed = true;
-    giftFlow.overlayOpen = true; // Bloqueo temporal
-    // updateGiftLocks() se llama al cerrar para desbloquear visualmente, 
-    // pero ya marcamos el flag para que sea posible.
+    updateGiftLocks();
 }
 
 function closeLetterOverlay() {
     const overlay = document.getElementById('letter-overlay');
-
-    // 1. Ocultar
-    overlay.classList.add('hidden');
-    overlay.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = ''; // Restaurar scroll
-
-    // 2. Estado
-    giftFlow.overlayOpen = false;
-
-    // 3. Desbloquear otros regalos
-    updateGiftLocks();
+    document.body.style.overflow = '';
+    overlay.classList.remove('active');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 500);
 }
 
+// Global Listener mandatory
+document.addEventListener("click", (e) => {
+    const openBtn = e.target.closest('[data-action="open-letter"]');
+    if (openBtn) {
+        e.stopPropagation();
+        alert("OPEN LETTER OK");
+        console.log("OPEN LETTER OK");
+        openLetterOverlay();
+        return;
+    }
+    const closeBtn = e.target.closest('[data-action="close-letter"]');
+    if (closeBtn) {
+        e.stopPropagation();
+        closeLetterOverlay();
+    }
+});
+
 function updateGiftLocks() {
-    // Si la carta (0) está abierta pero NO revelada, bloqueamos.
-    // Si overlayOpen es true, también podríamos bloquear clicks en otros, pero el overlay tapa todo con z-index.
     const isLocked = (giftFlow.openIndex === 0 && !giftFlow.textRevealed);
 
     document.querySelectorAll('.gift-box').forEach((box, i) => {
-        const idx = Number(box.dataset.index || i); // Fallback si no hay dataset (paranoia)
-
-        if (idx === 0) {
-            box.classList.remove('gift-disabled');
+        if (i === 0) {
+            box.classList.remove('gift-disabled'); // El regalo especial siempre es accesible
         } else {
             if (isLocked) box.classList.add('gift-disabled');
             else box.classList.remove('gift-disabled');
         }
-    });
-}
-
-function revealLetter(element) {
-    // Legacy support if needed, but we redirect to overlay
-    openLetterOverlay();
-}
-
-/* EVENT DELEGATION */
-function initGifts() {
-    // Delegación para abrir/cerrar carta
-    document.addEventListener('click', (e) => {
-        const target = e.target;
-
-        // ABRIR (Botón "Ver texto")
-        if (target.closest('[data-action="open-letter"]') || target.classList.contains('btn-reveal')) {
-            e.preventDefault();
-            e.stopPropagation();
-            openLetterOverlay();
-            return;
-        }
-
-        // CERRAR (Botón X, Cerrar, Backdrop)
-        if (target.closest('[data-action="close-letter"]')) {
-            e.preventDefault();
-            closeLetterOverlay();
-            return;
-        }
-    });
-
-    // Tecla Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeLetterOverlay();
     });
 }
 

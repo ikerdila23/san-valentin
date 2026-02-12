@@ -99,39 +99,14 @@
     <div id="toast" class="toast hidden"></div>
 
     <!-- Letter Overlay -->
-    <!-- Letter Overlay -->
-    <!-- Letter Overlay -->
-    <!-- OVERLAY CARTA (sobre que se abre + carta sale) -->
-    <div id="letter-overlay" class="letter-overlay hidden" aria-hidden="true">
+    <div id="letter-overlay" class="letter-overlay">
         <div class="letter-backdrop" data-action="close-letter"></div>
-
-        <div class="letter-stage" role="dialog" aria-modal="true" aria-label="Carta">
-            <button class="letter-x" type="button" data-action="close-letter" aria-label="Cerrar">✕</button>
-
-            <div class="envelope-wrap">
-                <div class="envelope" id="envelope">
-                    <div class="env-back"></div>
-                    <div class="env-front"></div>
-                    <div class="env-flap"></div>
-                    <div class="env-heart" aria-hidden="true">❤</div>
-
-                    <!-- La carta está DENTRO del sobre visualmente al inicio -->
-                    <div class="letter-sheet" id="letter-sheet">
-                        <div class="sheet-top">
-                            <div class="sheet-stamp" aria-hidden="true">💌</div>
-                            <h3 id="letter-title" class="sheet-title"></h3>
-                        </div>
-
-                        <div id="letter-body" class="sheet-body"></div>
-
-                        <img id="letter-img" class="sheet-img" alt="Nuestra foto" />
-
-                        <div class="sheet-sign">— Iker 💌</div>
-
-                        <button class="btn btn-yes sheet-close" type="button" data-action="close-letter">Cerrar</button>
-                    </div>
-                </div>
-            </div>
+        <div class="letter-card">
+            <button class="letter-x" data-action="close-letter">✕</button>
+            <h2 id="letter-title"></h2>
+            <div id="letter-body"></div>
+            <img id="letter-img" alt="Nuestra foto">
+            <button class="btn btn-yes" data-action="close-letter">Cerrar</button>
         </div>
     </div>
 

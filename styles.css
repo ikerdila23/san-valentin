@@ -793,321 +793,111 @@ body {
     z-index: 15;
 }
 
-/* OVERLAY CARTA */
+/* VERIFIABLE CSS EXACTO */
+/* VERIFIABLE CSS EXACTO */
 .letter-overlay {
     position: fixed;
     inset: 0;
-    z-index: 5000;
-    display: grid;
-    place-items: center;
-    padding: 14px;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
-
-.letter-overlay.hidden {
-    display: none;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     opacity: 0;
     pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.letter-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .letter-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(8px);
-    cursor: pointer;
+    z-index: 1;
 }
 
-.letter-stage {
+.letter-card {
     position: relative;
-    width: min(94vw, 860px);
-    height: 100%;
-    max-height: 90vh;
-    display: grid;
-    place-items: center;
-    perspective: 1500px;
-    pointer-events: none;
-    /* Stage no bloquea, sus hijos sí */
+    z-index: 2;
+    background: #fff;
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+    transform: translateY(50px) scale(0.9);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    /* Paper texture effect */
+    background-image: linear-gradient(to bottom, #fff 0%, #fff9f9 100%);
+    border: 1px solid #ffebeb;
 }
 
-.letter-stage>* {
-    pointer-events: auto;
+.letter-overlay.active .letter-card {
+    transform: translateY(0) scale(1);
 }
 
 .letter-x {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
+    top: 15px;
+    right: 15px;
+    background: none;
     border: none;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 1.5rem;
+    color: #ff4d6d;
     cursor: pointer;
-    z-index: 100;
-    color: #ff0055;
-    font-size: 1.2rem;
-    display: grid;
-    place-items: center;
     transition: transform 0.2s;
 }
 
 .letter-x:hover {
-    transform: scale(1.1);
+    transform: rotate(90deg) scale(1.1);
 }
 
-/* ENVELOPE WRAPPER */
-.envelope-wrap {
-    width: min(90vw, 500px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* Animación de entrada del sobre */
-    animation: popEnvelope 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-}
-
-@keyframes popEnvelope {
-    from {
-        transform: scale(0.8) translateY(20px);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-}
-
-/* EL SOBRE */
-.envelope {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    /* Forma rectangular de sobre */
-    max-height: 340px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    /* Para que la carta salga desde abajo visualmente si quisiéramos */
-    transition: transform 0.3s;
-}
-
-/* Partes del sobre */
-.env-back {
-    position: absolute;
-    inset: 0;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    border: 2px solid #ffebeb;
-}
-
-.env-front {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
-    pointer-events: none;
-    /* Dejar pasar clicks a la carta si sobresale */
-
-    /* Creamos el bolsillo con clip-path o bordes. Usaremos CSS shapes simple */
-    background: transparent;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.env-front::after {
-    /* Bolsillo visual */
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60%;
-    background: linear-gradient(135deg, #ff4d6d 0%, #ff8fa3 100%);
-    clip-path: polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%);
-    /* Ajuste para que parezca un sobre abierto por arriba */
-    /* Mejor: polygon standard de sobre */
-    clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
-    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.env-flap {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 60%;
-    background: #ff0055;
-    background: linear-gradient(135deg, #ff0055 0%, #ff4d6d 100%);
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-    transform-origin: top;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 4;
-    border-radius: 12px 12px 0 0;
-}
-
-.env-heart {
-    position: absolute;
-    top: 55%;
-    /* Ajustado al pico de la solapa */
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 2.5rem;
-    color: #ffc107;
-    z-index: 5;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
-    transition: opacity 0.3s;
-}
-
-/* INTERIOR: LA CARTA */
-.letter-sheet {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%) translateY(0) scale(0.9);
-    width: 90%;
-    max-height: 80vh;
-    background: white;
-    padding: 24px 20px;
-    border-radius: 16px;
-    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
-    z-index: 2;
-    /* Dentro del sobre (detrás del front) */
-    opacity: 0;
-    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    /* Scroll interno */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: left;
-}
-
-/* ESTADO ABIERTO */
-.envelope.open .env-flap {
-    transform: rotateX(180deg);
-}
-
-.envelope.open .env-heart {
-    opacity: 0;
-}
-
-.envelope.open .letter-sheet {
-    /* Sale hacia arriba y ocupa pantalla si es necesario */
-    opacity: 1;
-    z-index: 10;
-    /* Se pone por delante de todo */
-
-    /* Posición final: centrada en pantalla o saliendo mucho */
-    /* Transform hack: salir del sobre y crecer */
-    bottom: auto;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(1);
-
-    width: min(90vw, 580px);
-    height: auto;
-    max-height: 85vh;
-    /* Scroll si muy larga */
-    transition-delay: 0.3s;
-    /* Espera a que se abra el sobre */
-}
-
-/* Estilos de la carta */
-.sheet-top {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 16px;
-    width: 100%;
-}
-
-.sheet-stamp {
-    font-size: 2rem;
-    margin-bottom: 8px;
-    animation: pulse 2s infinite;
-}
-
-.sheet-title {
+#letter-title {
     font-family: var(--font-display);
-    font-size: 1.8rem;
+    font-size: 2.5rem;
     color: #ff0055;
-    text-align: center;
-    line-height: 1.2;
+    margin-bottom: 20px;
 }
 
-.sheet-body {
+#letter-body {
     font-family: var(--font-main);
     font-size: clamp(1rem, 2.6vw, 1.12rem);
-    line-height: 1.6;
-    color: #444;
+    line-height: 1.55;
+    color: #333;
+    text-align: left;
     white-space: pre-wrap;
-    /* Respeta saltos de línea */
+    margin-bottom: 25px;
     width: 100%;
 }
 
-.sheet-img {
-    width: 100%;
-    max-width: 320px;
-    border-radius: 16px;
-    margin: 20px auto 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+#letter-img {
+    max-width: 100%;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     display: block;
 }
 
-.sheet-sign {
-    width: 100%;
-    text-align: right;
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    color: #ff4d6d;
-    margin-top: 10px;
+/* MANDATORY Z-INDEX FIXES */
+.gift-box.open .gift-lid {
+    pointer-events: none;
 }
 
-.sheet-close {
-    margin-top: 24px;
-    width: 100%;
-    max-width: 200px;
+.gift-content {
+    z-index: 10;
+    pointer-events: auto;
 }
 
-/* Scrollbar bonita para la carta */
-.letter-sheet::-webkit-scrollbar {
-    width: 6px;
-}
-
-.letter-sheet::-webkit-scrollbar-thumb {
-    background: #ffcbd1;
-    border-radius: 10px;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.1);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-@media (max-width: 768px) {
-    .letter-sheet {
-        padding: 20px 16px;
-        width: 94vw;
-        max-height: 88vh;
-    }
-
-    .sheet-title {
-        font-size: 1.6rem;
-    }
+.gift-body {
+    pointer-events: none;
 }
