@@ -446,14 +446,26 @@ function openLetterOverlay() {
     const overlay = document.getElementById('letter-overlay');
     const title = document.getElementById('letter-title');
     const body = document.getElementById('letter-body');
-    const img = document.getElementById('letter-img');
     const card = overlay.querySelector('.letter-card');
 
     // Content
     title.innerText = CONFIG.letterGift.title;
     body.innerText = CONFIG.letterGift.message;
-    img.src = CONFIG.letterGift.image;
-    img.onerror = () => { img.style.display = 'none'; };
+
+    // Image Logic
+    const imgEl = document.getElementById("letter-img");
+    imgEl.src = CONFIG.letterGift.image;
+    imgEl.style.display = "block";
+
+    imgEl.onload = () => {
+        imgEl.style.display = "block";
+    };
+
+    imgEl.onerror = () => {
+        imgEl.style.display = "none";
+        // Optional debug text to console or alt
+        console.log("Error loading letter image");
+    };
 
     // Logic
     document.body.style.overflow = 'hidden';
