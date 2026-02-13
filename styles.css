@@ -830,53 +830,79 @@ body {
 }
 
 
-/* Video Overlay (Kisses) */
-#video-overlay {
+/* OVERLAYS (Unified) */
+.overlay,
+.letter-overlay {
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
-    /* Color negro semitransparente */
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
+    z-index: 9000;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    /* Backdrop handles color */
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.3s ease;
 }
 
-#video-overlay.active {
+/* Estado visible */
+.overlay.active,
+.letter-overlay.active {
     opacity: 1;
     pointer-events: auto;
 }
 
-.video-backdrop {
+/* Estado oculto (override strict) */
+.overlay.hidden,
+.letter-overlay.hidden {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Backdrops */
+.video-backdrop,
+.letter-backdrop {
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
 }
 
-.video-card {
+/* Cards */
+.video-card,
+.letter-card,
+.gift-overlay-card {
     position: relative;
-    z-index: 2;
-    background: transparent;
-    border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    max-width: 420px;
-    width: 90%;
-    /* padding: 10px; SI queremos borde */
-    overflow: hidden;
-    transform: scale(0.9);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Asegurar visibilidad */
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 }
 
-#video-overlay.active .video-card {
+.overlay.active .video-card,
+.overlay.active .gift-overlay-card,
+.letter-overlay.active .letter-card {
     transform: scale(1);
+}
+
+/* Specific overrides for Letter to match previous look if needed, 
+   but grid placement is usually better than absolute centering */
+.letter-card {
+    background: #fff0f3;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 90%;
+    width: 320px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid #ffccd5;
 }
 
 .btn-close-video {

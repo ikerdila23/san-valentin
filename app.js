@@ -471,7 +471,29 @@ function revealGiftContent(index, btnElement) {
     // No used but kept for safety
 }
 
+/* OVERLAY MANAGEMENT */
+function closeAllOverlays() {
+    // 1. Hide all overlays
+    const overlays = document.querySelectorAll('.overlay, .letter-overlay');
+    overlays.forEach(ov => {
+        ov.classList.remove('active');
+        ov.classList.add('hidden');
+    });
+
+    // 2. Stop Video if playing
+    const video = document.getElementById('kisses-video');
+    if (video) {
+        video.pause();
+        video.currentTime = 0;
+    }
+
+    // 3. Restore Scroll
+    document.body.style.overflow = '';
+}
+
 function openLetterOverlay() {
+    closeAllOverlays(); // Safety First
+
     const overlay = document.getElementById('letter-overlay');
     const title = document.getElementById('letter-title');
     const body = document.getElementById('letter-body');
@@ -499,54 +521,47 @@ function openLetterOverlay() {
 }
 
 function closeLetterOverlay() {
-    const overlay = document.getElementById('letter-overlay');
-    document.body.style.overflow = '';
-    overlay.classList.remove('active');
-    setTimeout(() => {
-        overlay.classList.add('hidden');
-    }, 500);
+    closeAllOverlays();
 }
 
 /* SPA OVERLAY */
 function openSpaOverlay() {
+    closeAllOverlays(); // Safety First
+
     const overlay = document.getElementById('spa-overlay');
     document.body.style.overflow = 'hidden';
     overlay.classList.remove('hidden');
     void overlay.offsetWidth;
     overlay.classList.add('active');
+
     spawnMiniConfetti(overlay.querySelector('.video-card'));
 }
 
 function closeSpaOverlay() {
-    const overlay = document.getElementById('spa-overlay');
-    document.body.style.overflow = '';
-    overlay.classList.remove('active');
-    setTimeout(() => {
-        overlay.classList.add('hidden');
-    }, 400);
+    closeAllOverlays();
 }
 
 /* SURPRISE OVERLAY */
 function openSurpriseOverlay() {
+    closeAllOverlays(); // Safety First
+
     const overlay = document.getElementById('surprise-overlay');
     document.body.style.overflow = 'hidden';
     overlay.classList.remove('hidden');
     void overlay.offsetWidth;
     overlay.classList.add('active');
+
     spawnMiniConfetti(overlay.querySelector('.video-card'));
 }
 
 function closeSurpriseOverlay() {
-    const overlay = document.getElementById('surprise-overlay');
-    document.body.style.overflow = '';
-    overlay.classList.remove('active');
-    setTimeout(() => {
-        overlay.classList.add('hidden');
-    }, 400);
+    closeAllOverlays();
 }
 
 /* VIDEO OVERLAY LOGIC (KISSES) */
 function openVideoOverlay() {
+    closeAllOverlays(); // Safety First
+
     const overlay = document.getElementById('video-overlay');
     const video = document.getElementById('kisses-video');
 
@@ -575,37 +590,28 @@ function openVideoOverlay() {
 }
 
 function closeVideoOverlay() {
-    const overlay = document.getElementById('video-overlay');
-    const video = document.getElementById('kisses-video');
-
-    document.body.style.overflow = '';
-    overlay.classList.remove('active');
-
-    video.pause();
-    video.currentTime = 0;
-
-    setTimeout(() => {
-        overlay.classList.add('hidden');
-    }, 400);
+    closeAllOverlays();
 }
 
-// Global Listener mandatory
+// Global Listener mandatory (WITH RETURNS)
 document.addEventListener("click", (e) => {
     const target = e.target;
 
     // 1. Open Letter
-    const openBtn = target.closest('[data-action="open-letter"]');
-    if (openBtn) {
+    if (target.closest('[data-action="open-letter"]')) {
         e.stopPropagation();
         openLetterOverlay();
         return;
     }
 
-    // 2. Close Letter
-    const closeBtn = target.closest('[data-action="close-letter"]');
-    if (closeBtn) {
+    // 2. Close Actions (ALL CLOSINGS)
+    if (target.closest('[data-action="close-letter"]') ||
+        target.closest('[data-action="close-video"]') ||
+        target.closest('[data-action="close-spa"]') ||
+        target.closest('[data-action="close-surprise"]')) {
+
         e.stopPropagation();
-        closeLetterOverlay();
+        closeAllOverlays();
         return;
     }
 
@@ -628,37 +634,12 @@ document.addEventListener("click", (e) => {
         openSurpriseOverlay();
         return;
     }
-
-    // 4. Close Overlays
-    if (target.closest('[data-action="close-video"]')) {
-        e.stopPropagation();
-        closeVideoOverlay();
-        return;
-    }
-    if (target.closest('[data-action="close-spa"]')) {
-        e.stopPropagation();
-        closeSpaOverlay();
-        return;
-    }
-    if (target.closest('[data-action="close-surprise"]')) {
-        e.stopPropagation();
-        closeSurpriseOverlay();
-        return;
-    }
 });
 
 // ESC Key for Overlays
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        const letter = document.getElementById('letter-overlay');
-        const video = document.getElementById('video-overlay');
-        const spa = document.getElementById('spa-overlay');
-        const surprise = document.getElementById('surprise-overlay');
-
-        if (letter && !letter.classList.contains('hidden')) closeLetterOverlay();
-        if (video && !video.classList.contains('hidden')) closeVideoOverlay();
-        if (spa && !spa.classList.contains('hidden')) closeSpaOverlay();
-        if (surprise && !surprise.classList.contains('hidden')) closeSurpriseOverlay();
+        closeAllOverlays();
     }
 });
 
