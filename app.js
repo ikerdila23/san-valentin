@@ -57,8 +57,8 @@ const state = {
 
 // Nuevo estado de flujo de regalos
 const giftFlow = {
-    openIndex: null, // Si es 0, estamos en el regalo especial
-    textRevealed: false
+    openIndex: null,
+    revealed: new Set() // Indices de regalos revelados
 };
 
 /* AUDIO CONTEXT */
@@ -379,17 +379,18 @@ function spawnMiniConfetti(element) {
 }
 
 function openGift(element, index) {
-    // 1. Si ya está abierta, no hacemos nada extra (salvo si queremos re-renderizar, pero no es el caso)
-    if (element.classList.contains('open')) {
-        return;
+    if (element.classList.contains('open')) return;
+
+    // BLOQUEO SECUENCIAL:
+    // Si hay un regalo abierto (openIndex != null) y NO es el que intentamos abrir,
+    // y ese regalo abierto NO ha sido revelado, entonces bloqueamos.
+    if (giftFlow.openIndex !== null && giftFlow.openIndex !== index) {
+        if (!giftFlow.revealed.has(giftFlow.openIndex)) {
+            return; // Bloqueado
+        }
     }
 
-    // 2. Comprobar bloqueo: Si el regalo especial (0) está abierto y NO revelado, BLOQUEAMOS los demás
-    if (giftFlow.openIndex === 0 && !giftFlow.textRevealed && index !== 0) {
-        return; // Bloqueado
-    }
-
-    giftFlow.openIndex = index; // Actualizar el índice del regalo abierto
+    giftFlow.openIndex = index;
 
     playPop();
     spawnMiniConfetti(element);
@@ -399,13 +400,10 @@ function openGift(element, index) {
     element.classList.add('open');
 
     const contentDiv = element.querySelector('.gift-content');
-    contentDiv.innerHTML = ''; // Limpiar
+    contentDiv.innerHTML = '';
 
     if (index === 0) {
-        // REGALO ESPECIAL (Preview + Botón)
-        giftFlow.textRevealed = false; // Resetear estado de revelado para el regalo especial
-
-        // Render Preview
+        // REGALO 0: CARTA (Botón "Ver texto" -> Overlay)
         const container = document.createElement('div');
         container.className = 'gift-preview';
 
@@ -416,30 +414,59 @@ function openGift(element, index) {
         const btn = document.createElement('button');
         btn.className = 'btn-reveal';
         btn.innerText = CONFIG.letterGift.buttonLabel;
-        btn.onclick = null; // No inline events
         btn.setAttribute('data-action', 'open-letter');
 
         container.appendChild(title);
         container.appendChild(btn);
         contentDiv.appendChild(container);
 
-        // Bloquear los demás visualmente
-        updateGiftLocks();
-
     } else {
-        // REGALOS NORMALES (1, 2, 3) -> Index en array es index-1
-        const giftText = CONFIG.gifts[index - 1]; // CONFIG.gifts solo tiene 3 strings ahora
+        // REGALOS 1, 2, 3: Primero botón de revelar
+        let btnText = "";
+        let action = "";
 
-        const container = document.createElement('div');
-        container.className = 'gift-note';
+        if (index === 1) {
+            btnText = "¿Quieres verlo? 🧖♀️";
+            action = "reveal-spa";
+        } else if (index === 2) {
+            btnText = "¿Cómo estos? 😉";
+            action = "reveal-kisses";
+        } else if (index === 3) {
+            btnText = "¿? 🤫";
+            action = "reveal-secret";
+        }
 
-        const message = document.createElement('div');
-        message.className = 'gift-note-message';
-        message.innerText = giftText;
+        const btn = document.createElement('button');
+        btn.className = 'btn-reveal-gift';
+        btn.innerText = btnText;
+        btn.setAttribute('data-action', action);
 
-        container.appendChild(message);
-        contentDiv.appendChild(container);
+        contentDiv.appendChild(btn);
     }
+
+    updateGiftLocks();
+}
+
+function revealGiftContent(index, btnElement) {
+    giftFlow.revealed.add(index);
+
+    // Renderizado del texto final
+    const container = btnElement.parentElement; // .gift-content
+    container.innerHTML = '';
+
+    const giftText = CONFIG.gifts[index - 1];
+
+    const note = document.createElement('div');
+    note.className = 'gift-note';
+
+    const message = document.createElement('div');
+    message.className = 'gift-note-message';
+    message.innerText = giftText;
+
+    note.appendChild(message);
+    container.appendChild(note);
+
+    updateGiftLocks();
 }
 
 function openLetterOverlay() {
@@ -475,7 +502,7 @@ function openLetterOverlay() {
     overlay.classList.add('active');
 
     // Mark as revealed and unlock others
-    giftFlow.textRevealed = true;
+    giftFlow.revealed.add(0);
     updateGiftLocks();
 }
 
@@ -490,25 +517,53 @@ function closeLetterOverlay() {
 
 // Global Listener mandatory
 document.addEventListener("click", (e) => {
-    const openBtn = e.target.closest('[data-action="open-letter"]');
+    const target = e.target;
+
+    // 1. Open Letter
+    const openBtn = target.closest('[data-action="open-letter"]');
     if (openBtn) {
         e.stopPropagation();
         openLetterOverlay();
         return;
     }
-    const closeBtn = e.target.closest('[data-action="close-letter"]');
+
+    // 2. Close Letter
+    const closeBtn = target.closest('[data-action="close-letter"]');
     if (closeBtn) {
         e.stopPropagation();
         closeLetterOverlay();
+        return;
+    }
+
+    // 3. Reveal Gifts (delegation)
+    if (target.matches('[data-action="reveal-spa"]')) {
+        e.stopPropagation();
+        revealGiftContent(1, target);
+        return;
+    }
+    if (target.matches('[data-action="reveal-kisses"]')) {
+        e.stopPropagation();
+        revealGiftContent(2, target);
+        return;
+    }
+    if (target.matches('[data-action="reveal-secret"]')) {
+        e.stopPropagation();
+        revealGiftContent(3, target);
+        return;
     }
 });
 
 function updateGiftLocks() {
-    const isLocked = (giftFlow.openIndex === 0 && !giftFlow.textRevealed);
+    // Si hay un regalo abierto y no revelado, bloqueamos el resto
+    let isLocked = false;
+    if (giftFlow.openIndex !== null && !giftFlow.revealed.has(giftFlow.openIndex)) {
+        isLocked = true;
+    }
 
     document.querySelectorAll('.gift-box').forEach((box, i) => {
-        if (i === 0) {
-            box.classList.remove('gift-disabled'); // El regalo especial siempre es accesible
+        // El regalo actualmente abierto siempre está habilitado (para poder revelar)
+        if (i === giftFlow.openIndex) {
+            box.classList.remove('gift-disabled');
         } else {
             if (isLocked) box.classList.add('gift-disabled');
             else box.classList.remove('gift-disabled');

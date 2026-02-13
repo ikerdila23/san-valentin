@@ -775,11 +775,32 @@ body {
 
 /* Locked/Disabled State */
 .gift-disabled {
-    opacity: 0.5;
-    filter: saturate(0.85);
+    opacity: 0.6;
+    filter: grayscale(0.4);
     pointer-events: none;
     cursor: not-allowed;
     transition: all 0.3s;
+}
+
+/* Reveal Button inside Gift */
+.btn-reveal-gift {
+    background: #ff4d6d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 77, 109, 0.3);
+    transition: transform 0.2s, background 0.2s;
+    font-family: var(--font-main);
+    z-index: 20;
+}
+
+.btn-reveal-gift:hover {
+    transform: scale(1.05);
+    background: #e03e5d;
 }
 
 /* MANTENER Confetti Canvas */
