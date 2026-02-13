@@ -381,16 +381,17 @@ function spawnMiniConfetti(element) {
 function openGift(element, index) {
     if (element.classList.contains('open')) return;
 
-    // BLOQUEO SECUENCIAL:
-    // Si hay un regalo abierto (openIndex != null) y NO es el que intentamos abrir,
-    // y ese regalo abierto NO ha sido revelado, entonces bloqueamos.
-    if (giftFlow.openIndex !== null && giftFlow.openIndex !== index) {
-        if (!giftFlow.revealed.has(giftFlow.openIndex)) {
-            return; // Bloqueado
-        }
+    // ACCORDION LOGIC: Solo uno abierto a la vez.
+    const currentlyOpen = document.querySelector('.gift-box.open');
+    if (currentlyOpen && currentlyOpen !== element) {
+        currentlyOpen.classList.remove('open');
+        const oldContent = currentlyOpen.querySelector('.gift-content');
+        if (oldContent) oldContent.innerHTML = '';
     }
 
     giftFlow.openIndex = index;
+    // Se considera revelado al abrir porque ya se ve el contenido completo
+    giftFlow.revealed.add(index);
 
     playPop();
     spawnMiniConfetti(element);
@@ -402,8 +403,17 @@ function openGift(element, index) {
     const contentDiv = element.querySelector('.gift-content');
     contentDiv.innerHTML = '';
 
+    // Render Content Wrapper
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.justifyContent = 'center';
+    wrapper.style.height = '100%';
+    wrapper.style.width = '100%';
+
     if (index === 0) {
-        // REGALO 0: CARTA (Botón "Ver texto" -> Overlay)
+        // CARTA (Igual que antes)
         const container = document.createElement('div');
         container.className = 'gift-preview';
 
@@ -418,55 +428,54 @@ function openGift(element, index) {
 
         container.appendChild(title);
         container.appendChild(btn);
-        contentDiv.appendChild(container);
+        wrapper.appendChild(container);
 
     } else {
-        // REGALOS 1, 2, 3: Primero botón de revelar
-        let btnText = "";
-        let action = "";
+        // REGALOS 1, 2, 3 (Nuevo Diseño)
+        const title = document.createElement('h3');
+        title.className = 'gift-title';
 
-        if (index === 1) {
-            btnText = "¿Quieres verlo? 🧖♀️";
-            action = "reveal-spa";
-        } else if (index === 2) {
-            btnText = "¿Cómo estos? 😉";
-            action = "reveal-kisses";
-        } else if (index === 3) {
-            btnText = "¿? 🤫";
-            action = "reveal-secret";
-        }
+        const text = document.createElement('p');
+        text.className = 'gift-text-body';
 
         const btn = document.createElement('button');
-        btn.className = 'btn-reveal-gift';
-        btn.innerText = btnText;
-        btn.setAttribute('data-action', action);
+        btn.className = 'gift-btn-action';
 
-        contentDiv.appendChild(btn);
+        if (index === 1) {
+            title.innerText = "Relax & Mimos 🧖‍♀️";
+            text.innerText = "Vale por un día de mimos y relax juntos, sin prisas… 💗";
+            btn.innerText = "Botón Spa (lo cambio yo)";
+            btn.setAttribute('data-action', 'reveal-spa');
+        } else if (index === 2) {
+            title.innerText = "Besos Infinitos 💋";
+            text.innerText = "Vale por besos infinitos, de los que curan cualquier día malo ✨";
+            btn.innerText = "Botón Besos (lo cambio yo)";
+            btn.setAttribute('data-action', 'reveal-kisses');
+        } else if (index === 3) {
+            title.innerText = "Plan Sorpresa 🤫";
+            text.innerText = "Vale por un plan sorpresa… y solo tú tendrás la pista 🎀";
+            btn.innerText = "Botón Plan (lo cambio yo)";
+            btn.setAttribute('data-action', 'reveal-secret');
+        }
+
+        wrapper.appendChild(title);
+        wrapper.appendChild(text);
+        wrapper.appendChild(btn);
     }
 
+    contentDiv.appendChild(wrapper);
     updateGiftLocks();
 }
 
 function revealGiftContent(index, btnElement) {
-    giftFlow.revealed.add(index);
+    // ESTA FUNCION YA NO SE USA PARA REVELAR TEXTO, SOLO PARA ACCIÓN EXTRA
+    // Pero la mantenemos por si el usuario quiere usarla para "acción completada"
+    // De momento, los botones data-action="reveal-*" llaman aquí.
+    // Podemos hacer que muestren un alert bonito o algo temporal.
 
-    // Renderizado del texto final
-    const container = btnElement.parentElement; // .gift-content
-    container.innerHTML = '';
-
-    const giftText = CONFIG.gifts[index - 1];
-
-    const note = document.createElement('div');
-    note.className = 'gift-note';
-
-    const message = document.createElement('div');
-    message.className = 'gift-note-message';
-    message.innerText = giftText;
-
-    note.appendChild(message);
-    container.appendChild(note);
-
-    updateGiftLocks();
+    // Simplemente mostramos un mensaje temporal
+    alert("¡Aquí iría la acción del regalo! (Popup o similar)");
+    // No necesitamos desbloquear nada porque ya se desbloquea al abrir.
 }
 
 function openLetterOverlay() {
@@ -501,7 +510,7 @@ function openLetterOverlay() {
     void overlay.offsetWidth;
     overlay.classList.add('active');
 
-    // Mark as revealed and unlock others
+    // Mark as revealed and unlock others (aunque con accordion ya no importa tanto lo de unlock others)
     giftFlow.revealed.add(0);
     updateGiftLocks();
 }
@@ -535,7 +544,7 @@ document.addEventListener("click", (e) => {
         return;
     }
 
-    // 3. Reveal Gifts (delegation)
+    // 3. Reveal Gifts (delegation) -> AHORA SON BOTONES DE ACCIÓN
     if (target.matches('[data-action="reveal-spa"]')) {
         e.stopPropagation();
         revealGiftContent(1, target);
@@ -554,20 +563,10 @@ document.addEventListener("click", (e) => {
 });
 
 function updateGiftLocks() {
-    // Si hay un regalo abierto y no revelado, bloqueamos el resto
-    let isLocked = false;
-    if (giftFlow.openIndex !== null && !giftFlow.revealed.has(giftFlow.openIndex)) {
-        isLocked = true;
-    }
-
-    document.querySelectorAll('.gift-box').forEach((box, i) => {
-        // El regalo actualmente abierto siempre está habilitado (para poder revelar)
-        if (i === giftFlow.openIndex) {
-            box.classList.remove('gift-disabled');
-        } else {
-            if (isLocked) box.classList.add('gift-disabled');
-            else box.classList.remove('gift-disabled');
-        }
+    // CON ACCORDION, YA NO BLOQUEAMOS NADA. SIEMPRE SE PUEDE ABRIR CUALQUIERA.
+    // Solo mantenemos la función para no romper llamadas existentes, pero la vaciamos de lógica de bloqueo.
+    document.querySelectorAll('.gift-box').forEach((box) => {
+        box.classList.remove('gift-disabled');
     });
 }
 
