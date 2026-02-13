@@ -925,6 +925,29 @@ body {
     transition: all 0.3s;
 }
 
+/* Image Overlay Card Styles */
+.gift-overlay-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 24px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 4px solid #fff;
+}
+
+.overlay-img {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    max-height: 50vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin: 10px 0;
+    display: block;
+}
+
 /* Reveal Button inside Gift */
 .btn-reveal-gift {
     background: #ff4d6d;

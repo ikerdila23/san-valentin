@@ -444,17 +444,17 @@ function openGift(element, index) {
         if (index === 1) {
             title.innerText = "Relax & Mimos 🧖‍♀️";
             text.innerText = "Vale por un día de mimos y relax juntos, sin prisas… 💗";
-            btn.innerText = "Botón Spa (lo cambio yo)";
+            btn.innerText = "Modo relax ✨";
             btn.setAttribute('data-action', 'reveal-spa');
         } else if (index === 2) {
             title.innerText = "Besos Infinitos 💋";
             text.innerText = "Vale por besos infinitos, de los que curan cualquier día malo ✨";
-            btn.innerText = "Botón Besos (lo cambio yo)";
+            btn.innerText = "Dame play 😘";
             btn.setAttribute('data-action', 'reveal-kisses');
         } else if (index === 3) {
             title.innerText = "Plan Sorpresa 🤫";
             text.innerText = "Vale por un plan sorpresa… y solo tú tendrás la pista 🎀";
-            btn.innerText = "Botón Plan (lo cambio yo)";
+            btn.innerText = "Desbloquear pista 🎀";
             btn.setAttribute('data-action', 'reveal-secret');
         }
 
@@ -468,21 +468,13 @@ function openGift(element, index) {
 }
 
 function revealGiftContent(index, btnElement) {
-    // ESTA FUNCION YA NO SE USA PARA REVELAR TEXTO, SOLO PARA ACCIÓN EXTRA
-    // Pero la mantenemos por si el usuario quiere usarla para "acción completada"
-    // De momento, los botones data-action="reveal-*" llaman aquí.
-    // Podemos hacer que muestren un alert bonito o algo temporal.
-
-    // Simplemente mostramos un mensaje temporal
-    alert("¡Aquí iría la acción del regalo! (Popup o similar)");
-    // No necesitamos desbloquear nada porque ya se desbloquea al abrir.
+    // No used but kept for safety
 }
 
 function openLetterOverlay() {
     const overlay = document.getElementById('letter-overlay');
     const title = document.getElementById('letter-title');
     const body = document.getElementById('letter-body');
-    const card = overlay.querySelector('.letter-card');
 
     // Content
     title.innerText = CONFIG.letterGift.title;
@@ -493,24 +485,15 @@ function openLetterOverlay() {
     imgEl.src = CONFIG.letterGift.image;
     imgEl.style.display = "block";
 
-    imgEl.onload = () => {
-        imgEl.style.display = "block";
-    };
-
-    imgEl.onerror = () => {
-        imgEl.style.display = "none";
-        // Optional debug text to console or alt
-        console.log("Error loading letter image");
-    };
+    imgEl.onload = () => { imgEl.style.display = "block"; };
+    imgEl.onerror = () => { imgEl.style.display = "none"; };
 
     // Logic
     document.body.style.overflow = 'hidden';
     overlay.classList.remove('hidden');
-    // Force reflow
     void overlay.offsetWidth;
     overlay.classList.add('active');
 
-    // Mark as revealed and unlock others (aunque con accordion ya no importa tanto lo de unlock others)
     giftFlow.revealed.add(0);
     updateGiftLocks();
 }
@@ -522,6 +505,44 @@ function closeLetterOverlay() {
     setTimeout(() => {
         overlay.classList.add('hidden');
     }, 500);
+}
+
+/* SPA OVERLAY */
+function openSpaOverlay() {
+    const overlay = document.getElementById('spa-overlay');
+    document.body.style.overflow = 'hidden';
+    overlay.classList.remove('hidden');
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
+    spawnMiniConfetti(overlay.querySelector('.video-card'));
+}
+
+function closeSpaOverlay() {
+    const overlay = document.getElementById('spa-overlay');
+    document.body.style.overflow = '';
+    overlay.classList.remove('active');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 400);
+}
+
+/* SURPRISE OVERLAY */
+function openSurpriseOverlay() {
+    const overlay = document.getElementById('surprise-overlay');
+    document.body.style.overflow = 'hidden';
+    overlay.classList.remove('hidden');
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
+    spawnMiniConfetti(overlay.querySelector('.video-card'));
+}
+
+function closeSurpriseOverlay() {
+    const overlay = document.getElementById('surprise-overlay');
+    document.body.style.overflow = '';
+    overlay.classList.remove('active');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 400);
 }
 
 /* VIDEO OVERLAY LOGIC (KISSES) */
@@ -544,7 +565,7 @@ function openVideoOverlay() {
     const playPromise = video.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
-            console.log("Auto-play was prevented or video format not supported.", error);
+            console.log("Auto-play prevented", error);
             // Fallback path check if needed or user interacts
         });
     }
@@ -561,7 +582,7 @@ function closeVideoOverlay() {
     overlay.classList.remove('active');
 
     video.pause();
-    video.currentTime = 0; // Reset time
+    video.currentTime = 0;
 
     setTimeout(() => {
         overlay.classList.add('hidden');
@@ -589,10 +610,10 @@ document.addEventListener("click", (e) => {
     }
 
     // 3. Reveal Gifts (Actions)
-    // SPA
+    // SPA -> SPA OVERLAY
     if (target.matches('[data-action="reveal-spa"]')) {
         e.stopPropagation();
-        revealGiftContent(1, target);
+        openSpaOverlay();
         return;
     }
     // KISSES -> VIDEO OVERLAY
@@ -601,18 +622,27 @@ document.addEventListener("click", (e) => {
         openVideoOverlay();
         return;
     }
-    // SECRET
+    // SECRET -> SECRET OVERLAY
     if (target.matches('[data-action="reveal-secret"]')) {
         e.stopPropagation();
-        revealGiftContent(3, target);
+        openSurpriseOverlay();
         return;
     }
 
-    // 4. Close Video
-    const closeVideoBtn = target.closest('[data-action="close-video"]');
-    if (closeVideoBtn) {
+    // 4. Close Overlays
+    if (target.closest('[data-action="close-video"]')) {
         e.stopPropagation();
         closeVideoOverlay();
+        return;
+    }
+    if (target.closest('[data-action="close-spa"]')) {
+        e.stopPropagation();
+        closeSpaOverlay();
+        return;
+    }
+    if (target.closest('[data-action="close-surprise"]')) {
+        e.stopPropagation();
+        closeSurpriseOverlay();
         return;
     }
 });
@@ -622,9 +652,13 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         const letter = document.getElementById('letter-overlay');
         const video = document.getElementById('video-overlay');
+        const spa = document.getElementById('spa-overlay');
+        const surprise = document.getElementById('surprise-overlay');
 
         if (letter && !letter.classList.contains('hidden')) closeLetterOverlay();
         if (video && !video.classList.contains('hidden')) closeVideoOverlay();
+        if (spa && !spa.classList.contains('hidden')) closeSpaOverlay();
+        if (surprise && !surprise.classList.contains('hidden')) closeSurpriseOverlay();
     }
 });
 
