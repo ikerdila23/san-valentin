@@ -524,6 +524,50 @@ function closeLetterOverlay() {
     }, 500);
 }
 
+/* VIDEO OVERLAY LOGIC (KISSES) */
+function openVideoOverlay() {
+    const overlay = document.getElementById('video-overlay');
+    const video = document.getElementById('kisses-video');
+
+    // Set source (try relative first)
+    // To ensure fresh load in case of errors
+    video.src = "./assets/nosotros1.mov";
+
+    // Logic
+    document.body.style.overflow = 'hidden';
+    overlay.classList.remove('hidden');
+    // Force reflow
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
+
+    video.load();
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.log("Auto-play was prevented or video format not supported.", error);
+            // Fallback path check if needed or user interacts
+        });
+    }
+
+    // Update locks if not already (though gift opening does it)
+    updateGiftLocks();
+}
+
+function closeVideoOverlay() {
+    const overlay = document.getElementById('video-overlay');
+    const video = document.getElementById('kisses-video');
+
+    document.body.style.overflow = '';
+    overlay.classList.remove('active');
+
+    video.pause();
+    video.currentTime = 0; // Reset time
+
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 400);
+}
+
 // Global Listener mandatory
 document.addEventListener("click", (e) => {
     const target = e.target;
@@ -544,21 +588,43 @@ document.addEventListener("click", (e) => {
         return;
     }
 
-    // 3. Reveal Gifts (delegation) -> AHORA SON BOTONES DE ACCIÓN
+    // 3. Reveal Gifts (Actions)
+    // SPA
     if (target.matches('[data-action="reveal-spa"]')) {
         e.stopPropagation();
         revealGiftContent(1, target);
         return;
     }
+    // KISSES -> VIDEO OVERLAY
     if (target.matches('[data-action="reveal-kisses"]')) {
         e.stopPropagation();
-        revealGiftContent(2, target);
+        openVideoOverlay();
         return;
     }
+    // SECRET
     if (target.matches('[data-action="reveal-secret"]')) {
         e.stopPropagation();
         revealGiftContent(3, target);
         return;
+    }
+
+    // 4. Close Video
+    const closeVideoBtn = target.closest('[data-action="close-video"]');
+    if (closeVideoBtn) {
+        e.stopPropagation();
+        closeVideoOverlay();
+        return;
+    }
+});
+
+// ESC Key for Overlays
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const letter = document.getElementById('letter-overlay');
+        const video = document.getElementById('video-overlay');
+
+        if (letter && !letter.classList.contains('hidden')) closeLetterOverlay();
+        if (video && !video.classList.contains('hidden')) closeVideoOverlay();
     }
 });
 

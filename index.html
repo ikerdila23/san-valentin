@@ -110,6 +110,19 @@
         </div>
     </div>
 
+    <!-- Video Overlay (Kisses) -->
+    <div id="video-overlay" class="overlay hidden">
+        <div class="video-backdrop" data-action="close-video"></div>
+        <div class="video-card">
+            <button class="btn-close-video" data-action="close-video">✕</button>
+            <video id="kisses-video" controls playsinline loop muted>
+                <source src="./assets/nosotros1.mov" type="video/quicktime">
+                <source src="./assets/nosotros1.mov" type="video/mp4">
+                Tu navegador no soporta video.
+            </video>
+        </div>
+    </div>
+
     <script src="./app.js" defer></script>
 </body>
 
